@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import type { User } from '../types';
+import { XCircleIcon } from './icons/XCircleIcon';
 
 interface LoginPageProps {
+    isOpen: boolean;
+    onClose: () => void;
     onLogin: (user: User) => void;
     users: User[];
+    storeName: string;
+    themeColor: string;
 }
 
-export function LoginPage({ onLogin, users }: LoginPageProps) {
+export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeColor }: LoginPageProps) {
     const [loginIdentifier, setLoginIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -33,12 +38,32 @@ export function LoginPage({ onLogin, users }: LoginPageProps) {
         }
     };
 
+    if (!isOpen) {
+        return null;
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+        <div 
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+            aria-modal="true"
+            role="dialog"
+            onClick={onClose}
+        >
+            <div 
+                className="relative max-w-md w-full bg-white p-8 rounded-lg shadow-xl"
+                onClick={e => e.stopPropagation()} // Prevent closing modal when clicking inside
+            >
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+                    aria-label="Fechar modal de login"
+                >
+                    <XCircleIcon />
+                </button>
+
                 <div className="text-center mb-8">
-                     <h1 className="text-3xl font-extrabold text-green-600">
-                        🛒 Mercado Alagoinhas
+                     <h1 className={`text-3xl font-extrabold text-${themeColor}-600`}>
+                        🛒 {storeName}
                     </h1>
                     <p className="mt-2 text-slate-600">
                         Acesse sua conta
@@ -53,7 +78,7 @@ export function LoginPage({ onLogin, users }: LoginPageProps) {
                             id="login"
                             value={loginIdentifier}
                             onChange={(e) => setLoginIdentifier(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                            className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500`}
                             placeholder="Digite seu usuário ou e-mail"
                             required
                         />
@@ -65,7 +90,7 @@ export function LoginPage({ onLogin, users }: LoginPageProps) {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                            className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500`}
                             placeholder="••••••••"
                             required
                         />
@@ -78,7 +103,7 @@ export function LoginPage({ onLogin, users }: LoginPageProps) {
                     <div>
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
                         >
                             Entrar
                         </button>

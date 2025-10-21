@@ -40,7 +40,7 @@ const CodeSnippet: React.FC<{ language: string; code: string }> = ({ language, c
     </div>
 );
 
-export function ApiGatewayManager() {
+export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
     const [apiKeys, setApiKeys] = useState(initialApiKeys);
     const [webhooks, setWebhooks] = useState(initialWebhooks);
 
@@ -123,6 +123,7 @@ export function ApiGatewayManager() {
         setNewWebhookEvents('');
     };
 
+    const inputClasses = `border border-slate-300 rounded-md shadow-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
 
     return (
         <div className="space-y-8 pt-6 border-t">
@@ -130,7 +131,7 @@ export function ApiGatewayManager() {
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h4 className="text-md font-semibold text-slate-700">Chaves de API</h4>
-                    <button onClick={handleGenerateKey} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700">
+                    <button onClick={handleGenerateKey} className={`flex items-center gap-1 px-3 py-1.5 bg-${themeColor}-600 text-white text-sm font-semibold rounded-md hover:bg-${themeColor}-700`}>
                         <PlusIcon /> Gerar Chave
                     </button>
                 </div>
@@ -149,14 +150,14 @@ export function ApiGatewayManager() {
                                 <tr key={key.id} className="border-t">
                                     <td className="px-4 py-2 font-medium whitespace-nowrap">
                                         {editingKeyId === key.id ? (
-                                             <input type="text" value={keyNameInput} onChange={e => setKeyNameInput(e.target.value)} className="input-style w-48"/>
+                                             <input type="text" value={keyNameInput} onChange={e => setKeyNameInput(e.target.value)} className={`${inputClasses} w-48`}/>
                                         ) : (
                                             key.name
                                         )}
                                     </td>
                                     <td className="px-4 py-2 font-mono text-xs">{key.key}</td>
                                     <td className="px-4 py-2">
-                                        <span className={`px-2 py-0.5 text-xs rounded-full ${key.status === 'Ativa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        <span className={`px-2 py-0.5 text-xs rounded-full ${key.status === 'Ativa' ? `bg-${themeColor}-100 text-${themeColor}-800` : 'bg-red-100 text-red-800'}`}>
                                             {key.status}
                                         </span>
                                     </td>
@@ -203,14 +204,14 @@ export function ApiGatewayManager() {
                                 <tr key={wh.id} className="border-t">
                                     <td className="px-4 py-2 font-mono text-xs">
                                         {editingWebhookId === wh.id ? (
-                                             <input type="text" value={webhookUrlInput} onChange={e => setWebhookUrlInput(e.target.value)} className="input-style w-full"/>
+                                             <input type="text" value={webhookUrlInput} onChange={e => setWebhookUrlInput(e.target.value)} className={`${inputClasses} w-full`}/>
                                         ) : (
                                             wh.url
                                         )}
                                     </td>
                                     <td className="px-4 py-2 align-top">
                                          {editingWebhookId === wh.id ? (
-                                             <input type="text" value={webhookEventsInput} onChange={e => setWebhookEventsInput(e.target.value)} className="input-style w-full" placeholder="payment.confirmed, payment.failed"/>
+                                             <input type="text" value={webhookEventsInput} onChange={e => setWebhookEventsInput(e.target.value)} className={`${inputClasses} w-full`} placeholder="payment.confirmed, payment.failed"/>
                                         ) : (
                                             <div className="flex flex-wrap gap-1">
                                                 {wh.events.map(event => (
@@ -244,11 +245,11 @@ export function ApiGatewayManager() {
                         <div className="p-4 bg-slate-50 border-t">
                              <h5 className="text-sm font-semibold text-slate-700 mb-2">Adicionar Novo Webhook</h5>
                              <div className="space-y-3">
-                                <input type="text" value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)} placeholder="https://api.seu-servico.com/webhook" className="input-style w-full"/>
-                                <input type="text" value={newWebhookEvents} onChange={e => setNewWebhookEvents(e.target.value)} placeholder="Eventos (separados por vírgula), ex: payment.confirmed" className="input-style w-full"/>
+                                <input type="text" value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)} placeholder="https://api.seu-servico.com/webhook" className={`${inputClasses} w-full`}/>
+                                <input type="text" value={newWebhookEvents} onChange={e => setNewWebhookEvents(e.target.value)} placeholder="Eventos (separados por vírgula), ex: payment.confirmed" className={`${inputClasses} w-full`}/>
                                 <div className="flex justify-end gap-2">
                                      <button onClick={() => setIsAddingWebhook(false)} className="px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">Cancelar</button>
-                                    <button onClick={handleAddWebhook} className="px-3 py-1.5 text-sm bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">Salvar Webhook</button>
+                                    <button onClick={handleAddWebhook} className={`px-3 py-1.5 text-sm bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>Salvar Webhook</button>
                                 </div>
                              </div>
                         </div>
@@ -292,7 +293,6 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer sk_live_...'))
 curl_exec($ch);`} />
                 </div>
             </div>
-             <style>{`.input-style { border-radius: 0.375rem; border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px #22c55e; border-color: #22c55e; }`}</style>
         </div>
     );
 }

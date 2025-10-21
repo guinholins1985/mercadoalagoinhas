@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import type { Product, Seller, Transaction } from '../types';
 import { ProductFormModal } from './ProductFormModal';
@@ -6,6 +5,7 @@ import { SellerFormModal } from './SellerFormModal';
 import { ReportsDashboard } from './ReportsDashboard';
 import { FinancialDashboard } from './FinancialDashboard';
 import { SettingsDashboard } from './SettingsDashboard';
+import { AppearanceDashboard } from './AppearanceDashboard';
 import { PlusIcon } from './icons/PlusIcon';
 import { EditIcon } from './icons/EditIcon';
 import { DeleteIcon } from './icons/DeleteIcon';
@@ -15,18 +15,31 @@ import { UsersIcon } from './icons/UsersIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { CreditCardIcon } from './icons/CreditCardIcon';
 import { CogIcon } from './icons/CogIcon';
+import { EyeIcon } from './icons/EyeIcon';
 import { GoogleGenAI } from "@google/genai";
 import { TRANSACTIONS } from '../constants'; // Import mock transactions
 
 
-type Tab = 'overview' | 'products' | 'sellers' | 'financial' | 'settings';
+type Tab = 'overview' | 'products' | 'sellers' | 'financial' | 'appearance' | 'settings';
 
 export function AdminDashboard({
     initialProducts,
     initialSellers,
+    bannerImages,
+    onBannerImagesChange,
+    storeName,
+    onStoreNameChange,
+    themeColor,
+    onThemeColorChange,
 }: {
     initialProducts: Product[];
     initialSellers: Seller[];
+    bannerImages: string[];
+    onBannerImagesChange: (images: string[]) => void;
+    storeName: string;
+    onStoreNameChange: (name: string) => void;
+    themeColor: string;
+    onThemeColorChange: (color: string) => void;
 }) {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [products, setProducts] = useState<Product[]>(initialProducts);
@@ -136,13 +149,13 @@ export function AdminDashboard({
     const renderTabContent = () => {
         switch (activeTab) {
             case 'overview':
-                return <ReportsDashboard products={products} sellers={sellers} />;
+                return <ReportsDashboard products={products} sellers={sellers} themeColor={themeColor}/>;
             case 'products':
                 return (
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-800">Gerenciar Produtos</h2>
-                            <button onClick={handleAddProduct} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                            <button onClick={handleAddProduct} className={`flex items-center gap-2 px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
                                 <PlusIcon /> Novo Produto
                             </button>
                         </div>
@@ -180,7 +193,7 @@ export function AdminDashboard({
                     <div>
                          <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-800">Gerenciar Vendedores</h2>
-                            <button onClick={handleAddSeller} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                            <button onClick={handleAddSeller} className={`flex items-center gap-2 px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
                                 <PlusIcon /> Novo Vendedor
                             </button>
                         </div>
@@ -219,9 +232,18 @@ export function AdminDashboard({
                     </div>
                 );
             case 'financial':
-                return <FinancialDashboard transactions={transactions} />;
+                return <FinancialDashboard transactions={transactions} themeColor={themeColor} />;
+            case 'appearance':
+                return <AppearanceDashboard
+                    bannerImages={bannerImages}
+                    onBannerImagesChange={onBannerImagesChange}
+                    storeName={storeName}
+                    onStoreNameChange={onStoreNameChange}
+                    themeColor={themeColor}
+                    onThemeColorChange={onThemeColorChange}
+                />;
             case 'settings':
-                return <SettingsDashboard />;
+                return <SettingsDashboard themeColor={themeColor} />;
         }
     };
     
@@ -230,7 +252,7 @@ export function AdminDashboard({
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
                 activeTab === tab 
-                ? 'bg-green-600 text-white shadow-sm' 
+                ? `bg-${themeColor}-600 text-white shadow-sm` 
                 : 'text-slate-600 hover:bg-slate-200'
             }`}
         >
@@ -247,6 +269,7 @@ export function AdminDashboard({
                 <TabButton tab="products" label="Produtos" icon={<PackageIcon className="h-5 w-5"/>} />
                 <TabButton tab="sellers" label="Vendedores" icon={<UsersIcon className="h-5 w-5"/>} />
                 <TabButton tab="financial" label="Financeiro" icon={<CreditCardIcon className="h-5 w-5"/>} />
+                <TabButton tab="appearance" label="Aparência" icon={<EyeIcon className="h-5 w-5"/>} />
                 <TabButton tab="settings" label="Configurações" icon={<CogIcon className="h-5 w-5"/>} />
             </div>
             
@@ -262,6 +285,7 @@ export function AdminDashboard({
                 sellers={sellers}
                 onGenerateDescription={handleGenerateDescription}
                 isGenerating={isGenerating}
+                themeColor={themeColor}
             />
 
              <SellerFormModal
@@ -269,6 +293,7 @@ export function AdminDashboard({
                 onClose={() => setIsSellerModalOpen(false)}
                 onSave={handleSaveSeller}
                 sellerToEdit={sellerToEdit}
+                themeColor={themeColor}
             />
         </div>
     );

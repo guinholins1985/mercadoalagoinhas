@@ -1,5 +1,12 @@
 import type { Product, User, Seller, Review, Transaction } from './types';
 
+// Mock Banner Images
+export const BANNER_IMAGES: string[] = [
+    'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
+    'https://images.unsplash.com/photo-1607349914247-535a73a36b10?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+];
+
 // Mock Users
 export const USERS: User[] = [
   { id: 'user-1', name: 'Ana Silva', email: 'ana@example.com', type: 'customer' },

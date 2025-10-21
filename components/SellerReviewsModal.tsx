@@ -1,4 +1,3 @@
-
 import React from 'react';
 // FIX: Corrected import paths for types and constants
 import type { Seller } from '../types';
@@ -9,9 +8,10 @@ interface SellerReviewsModalProps {
     isOpen: boolean;
     onClose: () => void;
     seller: Seller | null;
+    themeColor: string;
 }
 
-export const SellerReviewsModal: React.FC<SellerReviewsModalProps> = ({ isOpen, onClose, seller }) => {
+export const SellerReviewsModal: React.FC<SellerReviewsModalProps> = ({ isOpen, onClose, seller, themeColor }) => {
     if (!isOpen || !seller) return null;
 
     const reviews = SELLER_REVIEWS.filter(review => review.sellerId === seller.id);
@@ -34,7 +34,7 @@ export const SellerReviewsModal: React.FC<SellerReviewsModalProps> = ({ isOpen, 
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className="text-2xl font-bold text-slate-800">Avaliações de</h2>
-                            <h3 className="text-xl font-semibold text-green-600">{seller.nomeCompleto}</h3>
+                            <h3 className={`text-xl font-semibold text-${themeColor}-600`}>{seller.nomeNegocio}</h3>
                         </div>
                         <button onClick={onClose} className="text-2xl text-slate-500 hover:text-slate-800">&times;</button>
                     </div>

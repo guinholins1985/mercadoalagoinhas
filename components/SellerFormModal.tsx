@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { Seller } from '../types';
 import { XCircleIcon } from './icons/XCircleIcon';
@@ -8,9 +7,10 @@ interface SellerFormModalProps {
     onClose: () => void;
     onSave: (seller: Omit<Seller, 'id' | 'dataCadastro' | 'rating'> & { id?: string }) => void;
     sellerToEdit: Seller | null;
+    themeColor: string;
 }
 
-export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: SellerFormModalProps) {
+export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit, themeColor }: SellerFormModalProps) {
     const [nomeCompleto, setNomeCompleto] = useState('');
     const [nomeNegocio, setNomeNegocio] = useState('');
     const [email, setEmail] = useState('');
@@ -57,6 +57,8 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
 
     if (!isOpen) return null;
 
+    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -71,28 +73,28 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="nomeCompleto" className="block text-sm font-medium text-slate-700">Nome Completo</label>
-                            <input type="text" id="nomeCompleto" value={nomeCompleto} onChange={e => setNomeCompleto(e.target.value)} required className="mt-1 block w-full input-style" />
+                            <input type="text" id="nomeCompleto" value={nomeCompleto} onChange={e => setNomeCompleto(e.target.value)} required className={inputClasses} />
                         </div>
                         <div>
                             <label htmlFor="nomeNegocio" className="block text-sm font-medium text-slate-700">Nome do Negócio</label>
-                            <input type="text" id="nomeNegocio" value={nomeNegocio} onChange={e => setNomeNegocio(e.target.value)} required className="mt-1 block w-full input-style" />
+                            <input type="text" id="nomeNegocio" value={nomeNegocio} onChange={e => setNomeNegocio(e.target.value)} required className={inputClasses} />
                         </div>
                          <div>
                             <label htmlFor="cnpj" className="block text-sm font-medium text-slate-700">CNPJ</label>
-                            <input type="text" id="cnpj" value={cnpj} onChange={e => setCnpj(e.target.value)} required placeholder="12.345.678/0001-99" className="mt-1 block w-full input-style" />
+                            <input type="text" id="cnpj" value={cnpj} onChange={e => setCnpj(e.target.value)} required placeholder="12.345.678/0001-99" className={inputClasses} />
                         </div>
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-slate-700">E-mail</label>
-                            <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} required className="mt-1 block w-full input-style" />
+                            <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} required className={inputClasses} />
                         </div>
                         <div>
                             <label htmlFor="telefone" className="block text-sm font-medium text-slate-700">Telefone (WhatsApp)</label>
-                            <input type="tel" id="telefone" value={telefone} onChange={e => setTelefone(e.target.value)} required placeholder="75999998888" className="mt-1 block w-full input-style" />
+                            <input type="tel" id="telefone" value={telefone} onChange={e => setTelefone(e.target.value)} required placeholder="75999998888" className={inputClasses} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                              <div>
                                 <label htmlFor="status" className="block text-sm font-medium text-slate-700">Status do Cadastro</label>
-                                <select id="status" value={status} onChange={e => setStatus(e.target.value as any)} required className="mt-1 block w-full input-style">
+                                <select id="status" value={status} onChange={e => setStatus(e.target.value as any)} required className={inputClasses}>
                                     <option value="Pendente">Pendente</option>
                                     <option value="Aprovado">Aprovado</option>
                                     <option value="Rejeitado">Rejeitado</option>
@@ -100,7 +102,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
                             </div>
                             <div>
                                 <label htmlFor="subscriptionStatus" className="block text-sm font-medium text-slate-700">Status da Assinatura</label>
-                                <select id="subscriptionStatus" value={subscriptionStatus} onChange={e => setSubscriptionStatus(e.target.value as any)} required className="mt-1 block w-full input-style">
+                                <select id="subscriptionStatus" value={subscriptionStatus} onChange={e => setSubscriptionStatus(e.target.value as any)} required className={inputClasses}>
                                     <option value="Ativa">Ativa</option>
                                     <option value="Inativa">Inativa</option>
                                 </select>
@@ -112,13 +114,12 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">
                             Cancelar
                         </button>
-                        <button type="submit" className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                        <button type="submit" className={`px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
                             Salvar Vendedor
                         </button>
                     </div>
                 </form>
             </div>
-            <style>{`.input-style { border-radius: 0.375rem; border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px #22c55e; border-color: #22c55e; }`}</style>
         </div>
     );
 }

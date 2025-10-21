@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { Product, Seller } from '../types';
 import { XCircleIcon } from './icons/XCircleIcon';
@@ -12,9 +11,10 @@ interface ProductFormModalProps {
     sellers: Seller[];
     onGenerateDescription?: (productName: string) => Promise<string>;
     isGenerating?: boolean;
+    themeColor: string;
 }
 
-export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, sellers, onGenerateDescription, isGenerating }: ProductFormModalProps) {
+export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, sellers, onGenerateDescription, isGenerating, themeColor }: ProductFormModalProps) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState(0);
@@ -77,6 +77,8 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
 
     if (!isOpen) return null;
 
+    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -91,7 +93,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-slate-700">Nome do Produto</label>
-                            <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 block w-full input-style" />
+                            <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className={inputClasses} />
                         </div>
                         <div>
                              <div className="flex justify-between items-center">
@@ -101,18 +103,18 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                                         type="button" 
                                         onClick={handleGenerateClick}
                                         disabled={isGenerating || !name}
-                                        className="flex items-center gap-1 text-xs text-green-600 font-semibold hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className={`flex items-center gap-1 text-xs text-${themeColor}-600 font-semibold hover:text-${themeColor}-800 disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >
                                         <SparklesIcon />
                                         {isGenerating ? 'Gerando...' : 'Gerar com IA'}
                                     </button>
                                 )}
                             </div>
-                            <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required rows={3} className="mt-1 block w-full input-style"></textarea>
+                            <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required rows={3} className={inputClasses}></textarea>
                         </div>
                          <div>
                             <label htmlFor="seller" className="block text-sm font-medium text-slate-700">Vendedor</label>
-                            <select id="seller" value={sellerId} onChange={e => setSellerId(e.target.value)} required className="mt-1 block w-full input-style">
+                            <select id="seller" value={sellerId} onChange={e => setSellerId(e.target.value)} required className={inputClasses}>
                                 <option value="" disabled>Selecione um vendedor</option>
                                 {sellers.filter(s => s.status === 'Aprovado').map(seller => (
                                     <option key={seller.id} value={seller.id}>{seller.nomeNegocio}</option>
@@ -122,20 +124,20 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                         <div className="grid grid-cols-2 gap-4">
                              <div>
                                 <label htmlFor="price" className="block text-sm font-medium text-slate-700">Preço (R$)</label>
-                                <input type="number" id="price" value={price} onChange={e => setPrice(Number(e.target.value))} required min="0" step="0.01" className="mt-1 block w-full input-style" />
+                                <input type="number" id="price" value={price} onChange={e => setPrice(Number(e.target.value))} required min="0" step="0.01" className={inputClasses} />
                             </div>
                              <div>
                                 <label htmlFor="stock" className="block text-sm font-medium text-slate-700">Estoque</label>
-                                <input type="number" id="stock" value={stock} onChange={e => setStock(Number(e.target.value))} required min="0" className="mt-1 block w-full input-style" />
+                                <input type="number" id="stock" value={stock} onChange={e => setStock(Number(e.target.value))} required min="0" className={inputClasses} />
                             </div>
                         </div>
                         <div>
                             <label htmlFor="category" className="block text-sm font-medium text-slate-700">Categoria</label>
-                            <input type="text" id="category" value={category} onChange={e => setCategory(e.target.value)} required className="mt-1 block w-full input-style" />
+                            <input type="text" id="category" value={category} onChange={e => setCategory(e.target.value)} required className={inputClasses} />
                         </div>
                         <div>
                             <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-700">URL da Imagem</label>
-                            <input type="url" id="imageUrl" value={imageUrl} onChange={e => setImageUrl(e.target.value)} required className="mt-1 block w-full input-style" />
+                            <input type="url" id="imageUrl" value={imageUrl} onChange={e => setImageUrl(e.target.value)} required className={inputClasses} />
                         </div>
                     </div>
 
@@ -143,13 +145,12 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">
                             Cancelar
                         </button>
-                        <button type="submit" className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                        <button type="submit" className={`px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
                             Salvar Produto
                         </button>
                     </div>
                 </form>
             </div>
-            <style>{`.input-style { border-radius: 0.375rem; border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px #22c55e; border-color: #22c55e; }`}</style>
         </div>
     );
 }

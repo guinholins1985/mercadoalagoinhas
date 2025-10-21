@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CreditCardIcon } from './icons/CreditCardIcon';
 import { MailIcon } from './icons/MailIcon';
@@ -39,13 +38,13 @@ const getCredentialFields = (gateway: Gateway): Record<string, string> => {
 
 
 // A simple toggle switch component for UI
-const ToggleSwitch: React.FC<{ enabled: boolean; onChange: () => void }> = ({ enabled, onChange }) => {
+const ToggleSwitch: React.FC<{ enabled: boolean; onChange: () => void; themeColor: string; }> = ({ enabled, onChange, themeColor }) => {
     return (
         <button
             type="button"
             onClick={onChange}
             className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
-                enabled ? 'bg-green-600' : 'bg-slate-300'
+                enabled ? `bg-${themeColor}-600` : 'bg-slate-300'
             }`}
         >
             <span
@@ -57,7 +56,7 @@ const ToggleSwitch: React.FC<{ enabled: boolean; onChange: () => void }> = ({ en
     );
 };
 
-export function SettingsDashboard() {
+export function SettingsDashboard({ themeColor }: { themeColor: string }) {
     const [gatewayConfigs, setGatewayConfigs] = useState(initialGatewayConfigs);
     const [editingGateway, setEditingGateway] = useState<Gateway | null>(null);
     const [currentCredentials, setCurrentCredentials] = useState<Record<string, string>>({});
@@ -101,6 +100,8 @@ export function SettingsDashboard() {
         setCurrentCredentials(prev => ({...prev, [field]: value}));
     };
 
+    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+
     return (
         <div>
             <h2 className="text-2xl font-bold text-slate-800 mb-6">Configurações e Integrações</h2>
@@ -123,10 +124,10 @@ export function SettingsDashboard() {
                                         <span className="font-medium text-slate-700">{gateway}</span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                         <span className={`text-xs font-semibold ${gatewayConfigs[gateway].active ? 'text-green-600' : 'text-slate-500'}`}>
+                                         <span className={`text-xs font-semibold ${gatewayConfigs[gateway].active ? `text-${themeColor}-600` : 'text-slate-500'}`}>
                                             {gatewayConfigs[gateway].active ? 'Ativo' : 'Inativo'}
                                         </span>
-                                        <ToggleSwitch enabled={gatewayConfigs[gateway].active} onChange={() => handleToggleGateway(gateway)} />
+                                        <ToggleSwitch enabled={gatewayConfigs[gateway].active} onChange={() => handleToggleGateway(gateway)} themeColor={themeColor} />
                                         <button onClick={() => editingGateway === gateway ? handleCancelEditing() : handleStartEditing(gateway)} className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-100">
                                             <EditIcon />
                                         </button>
@@ -144,14 +145,14 @@ export function SettingsDashboard() {
                                                     id={key}
                                                     value={currentCredentials[key] || ''}
                                                     onChange={e => handleCredentialChange(key, e.target.value)}
-                                                    className="mt-1 block w-full input-style"
+                                                    className={inputClasses}
                                                     placeholder={`Sua chave ${label}`}
                                                 />
                                             </div>
                                          ))}
                                         <div className="flex justify-end gap-2">
                                             <button onClick={handleCancelEditing} className="px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">Cancelar</button>
-                                            <button onClick={handleSaveConfig} className="px-3 py-1.5 text-sm bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">Salvar</button>
+                                            <button onClick={handleSaveConfig} className={`px-3 py-1.5 text-sm bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>Salvar</button>
                                         </div>
                                     </div>
                                 )}
@@ -166,7 +167,7 @@ export function SettingsDashboard() {
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {paymentMethods.map(method => (
-                                <span key={method} className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                <span key={method} className={`px-3 py-1 bg-${themeColor}-100 text-${themeColor}-800 text-sm font-medium rounded-full`}>
                                     {method}
                                 </span>
                             ))}
@@ -182,7 +183,7 @@ export function SettingsDashboard() {
                     <p className="text-sm text-slate-600 mb-6">
                         Gerencie chaves de API, webhooks e acesse a documentação para integrações externas.
                     </p>
-                    <ApiGatewayManager />
+                    <ApiGatewayManager themeColor={themeColor} />
                 </div>
 
 
@@ -202,7 +203,7 @@ export function SettingsDashboard() {
                     </div>
                 </div>
             </div>
-             <style>{`.input-style { border-radius: 0.375rem; border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px #22c55e; border-color: #22c55e; } @keyframes fade-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in { animation: fade-in 0.3s ease-out; }`}</style>
+             <style>{`@keyframes fade-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in { animation: fade-in 0.3s ease-out; }`}</style>
         </div>
     );
 }
