@@ -1,247 +1,264 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import type { Product, Seller } from '../types';
 import { ProductFormModal } from './ProductFormModal';
 import { SellerFormModal } from './SellerFormModal';
-import { SellerReviewsModal } from './SellerReviewsModal';
+import { ReportsDashboard } from './ReportsDashboard';
 import { PlusIcon } from './icons/PlusIcon';
 import { EditIcon } from './icons/EditIcon';
 import { DeleteIcon } from './icons/DeleteIcon';
+import { CheckIcon } from './icons/CheckIcon';
 import { PackageIcon } from './icons/PackageIcon';
 import { UsersIcon } from './icons/UsersIcon';
-import { StarIcon } from './icons/StarIcon';
+import { ChartBarIcon } from './icons/ChartBarIcon';
+// FIX: Added import for GoogleGenAI
+import { GoogleGenAI } from "@google/genai";
 
-interface AdminDashboardProps {
-    products: Product[];
-    sellers: Seller[];
-    onAddProduct: (productData: Omit<Product, 'id'>) => void;
-    onUpdateProduct: (product: Product) => void;
-    onDeleteProduct: (productId: string) => void;
-    onAddSeller: (sellerData: Omit<Seller, 'id'>) => void;
-    onUpdateSeller: (seller: Seller) => void;
-    onDeleteSeller: (sellerId: string) => void;
-}
-
-type ActiveTab = 'products' | 'sellers';
+type Tab = 'products' | 'sellers' | 'reports';
 
 export function AdminDashboard({
-    products,
-    sellers,
-    onAddProduct,
-    onUpdateProduct,
-    onDeleteProduct,
-    onAddSeller,
-    onUpdateSeller,
-    onDeleteSeller,
-}: AdminDashboardProps) {
-    const [activeTab, setActiveTab] = useState<ActiveTab>('products');
-    
-    // Modal states
+    initialProducts,
+    initialSellers,
+}: {
+    initialProducts: Product[];
+    initialSellers: Seller[];
+}) {
+    const [activeTab, setActiveTab] = useState<Tab>('reports');
+    const [products, setProducts] = useState<Product[]>(initialProducts);
+    const [sellers, setSellers] = useState<Seller[]>(initialSellers);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
+    const [productToEdit, setProductToEdit] = useState<Product | null>(null);
     const [isSellerModalOpen, setIsSellerModalOpen] = useState(false);
-    const [editingSeller, setEditingSeller] = useState<Seller | null>(null);
+    const [sellerToEdit, setSellerToEdit] = useState<Seller | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    
+    // FIX: Memoize GoogleGenAI client creation
+    const ai = useMemo(() => {
+        if (!process.env.API_KEY) {
+            console.error("API_KEY environment variable is not set. AI features will be disabled.");
+            return null;
+        }
+        return new GoogleGenAI({ apiKey: process.env.API_KEY });
+    }, []);
 
-    const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
-    const [reviewingSeller, setReviewingSeller] = useState<Seller | null>(null);
-
-
+    const handleGenerateDescription = async (productName: string) => {
+        if (!ai) {
+            alert('A funcionalidade de IA não está disponível. Verifique a configuração da chave de API.');
+            return '';
+        }
+        setIsGenerating(true);
+        try {
+            // FIX: Correctly call generateContent with model and contents
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: `Gere uma descrição de produto curta e atrativa (máximo 2 frases) para um marketplace de produtos locais. O produto é: "${productName}". Foco em frescor, qualidade e origem local.`,
+            });
+            // FIX: Correctly access the generated text
+            return response.text.trim();
+        } catch (error) {
+            console.error('Error generating description:', error);
+            alert('Falha ao gerar descrição.');
+            return '';
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+    
     // Product handlers
-    const handleOpenProductModal = (product: Product | null = null) => {
-        setEditingProduct(product);
+    const handleAddProduct = () => {
+        setProductToEdit(null);
         setIsProductModalOpen(true);
     };
 
-    const handleCloseProductModal = () => {
-        setIsProductModalOpen(false);
-        setEditingProduct(null);
+    const handleEditProduct = (product: Product) => {
+        setProductToEdit(product);
+        setIsProductModalOpen(true);
     };
 
-    const handleProductSubmit = (productData: Product | Omit<Product, 'id'>) => {
-        if ('id' in productData) {
-            onUpdateProduct(productData);
-        } else {
-            onAddProduct(productData);
-        }
-        handleCloseProductModal();
-    };
-
-    const confirmDeleteProduct = (productId: string) => {
+    const handleDeleteProduct = (productId: string) => {
         if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-            onDeleteProduct(productId);
+            setProducts(products.filter(p => p.id !== productId));
         }
     };
 
+    const handleSaveProduct = (productData: Omit<Product, 'id' | 'rating'> & { id?: string }) => {
+        if (productData.id) {
+            setProducts(products.map(p => p.id === productData.id ? { ...p, ...productData } : p));
+        } else {
+            const newProduct: Product = {
+                ...productData,
+                id: `prod-${Date.now()}`,
+                rating: 0, // New products start with 0 rating
+            };
+            setProducts([newProduct, ...products]);
+        }
+    };
+    
     // Seller handlers
-    const handleOpenSellerModal = (seller: Seller | null = null) => {
-        setEditingSeller(seller);
+    const handleAddSeller = () => {
+        setSellerToEdit(null);
         setIsSellerModalOpen(true);
     };
-    
-    const handleCloseSellerModal = () => {
-        setIsSellerModalOpen(false);
-        setEditingSeller(null);
+
+    const handleEditSeller = (seller: Seller) => {
+        setSellerToEdit(seller);
+        setIsSellerModalOpen(true);
     };
 
-    const handleSellerSubmit = (sellerData: Seller | Omit<Seller, 'id'>) => {
-        if ('id' in sellerData) {
-            onUpdateSeller(sellerData);
+    const handleDeleteSeller = (sellerId: string) => {
+        if (window.confirm('Tem certeza que deseja excluir este vendedor? Isso também removerá seus produtos.')) {
+            setSellers(sellers.filter(s => s.id !== sellerId));
+            setProducts(products.filter(p => p.sellerId !== sellerId));
+        }
+    };
+    
+    const handleSaveSeller = (sellerData: Omit<Seller, 'id' | 'dataCadastro' | 'rating'> & { id?: string }) => {
+        if (sellerData.id) {
+            setSellers(sellers.map(s => s.id === sellerData.id ? { ...s, ...sellerData } : s));
         } else {
-            onAddSeller(sellerData);
+            const newSeller: Seller = {
+                ...sellerData,
+                id: `seller-${Date.now()}`,
+                dataCadastro: new Date().toISOString().split('T')[0],
+                rating: 0,
+            };
+            setSellers([newSeller, ...sellers]);
         }
-        handleCloseSellerModal();
     };
 
-    const confirmDeleteSeller = (sellerId: string) => {
-        if (window.confirm('Tem certeza que deseja excluir este vendedor? Esta ação não pode ser desfeita.')) {
-            onDeleteSeller(sellerId);
+    const handleApproveSeller = (sellerId: string) => {
+        setSellers(sellers.map(s => s.id === sellerId ? { ...s, status: 'Aprovado' } : s));
+    };
+    
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'products':
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-slate-800">Gerenciar Produtos</h2>
+                            <button onClick={handleAddProduct} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                                <PlusIcon /> Novo Produto
+                            </button>
+                        </div>
+                        <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+                            <table className="w-full text-sm text-left text-slate-500">
+                                <thead className="text-xs text-slate-700 uppercase bg-slate-50">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3">Produto</th>
+                                        <th scope="col" className="px-6 py-3">Vendedor</th>
+                                        <th scope="col" className="px-6 py-3">Preço</th>
+                                        <th scope="col" className="px-6 py-3">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {products.map(p => (
+                                        <tr key={p.id} className="bg-white border-b hover:bg-slate-50">
+                                            <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{p.name}</th>
+                                            <td className="px-6 py-4">{p.sellerName}</td>
+                                            <td className="px-6 py-4">R$ {p.price.toFixed(2)}</td>
+                                            <td className="px-6 py-4 flex gap-3">
+                                                <button onClick={() => handleEditProduct(p)} title="Editar" className="text-blue-600 hover:text-blue-800"><EditIcon /></button>
+                                                <button onClick={() => handleDeleteProduct(p.id)} title="Excluir" className="text-red-600 hover:text-red-800"><DeleteIcon /></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            case 'sellers':
+                return (
+                    <div>
+                         <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-slate-800">Gerenciar Vendedores</h2>
+                            <button onClick={handleAddSeller} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                                <PlusIcon /> Novo Vendedor
+                            </button>
+                        </div>
+                        <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+                           <table className="w-full text-sm text-left text-slate-500">
+                                <thead className="text-xs text-slate-700 uppercase bg-slate-50">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3">Negócio</th>
+                                        <th scope="col" className="px-6 py-3">Responsável</th>
+                                        <th scope="col" className="px-6 py-3">Status</th>
+                                        <th scope="col" className="px-6 py-3">Data Cadastro</th>
+                                        <th scope="col" className="px-6 py-3">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sellers.map(s => (
+                                        <tr key={s.id} className="bg-white border-b hover:bg-slate-50">
+                                            <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{s.nomeNegocio}</th>
+                                            <td className="px-6 py-4">{s.nomeCompleto}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${s.status === 'Aprovado' ? 'bg-green-100 text-green-800' : s.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {s.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">{new Date(s.dataCadastro).toLocaleDateString('pt-BR')}</td>
+                                            <td className="px-6 py-4 flex gap-3">
+                                                {s.status === 'Pendente' && <button onClick={() => handleApproveSeller(s.id)} title="Aprovar" className="text-green-600 hover:text-green-800"><CheckIcon /></button>}
+                                                <button onClick={() => handleEditSeller(s)} title="Editar" className="text-blue-600 hover:text-blue-800"><EditIcon /></button>
+                                                <button onClick={() => handleDeleteSeller(s.id)} title="Excluir" className="text-red-600 hover:text-red-800"><DeleteIcon /></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            case 'reports':
+                return <ReportsDashboard products={products} sellers={sellers} />;
         }
     };
     
-    // Reviews handlers
-    const handleOpenReviewsModal = (seller: Seller) => {
-        setReviewingSeller(seller);
-        setIsReviewsModalOpen(true);
-    };
-
-    const handleCloseReviewsModal = () => {
-        setIsReviewsModalOpen(false);
-        setReviewingSeller(null);
-    };
-
-    const TabButton: React.FC<{tabId: ActiveTab, currentTab: ActiveTab, children: React.ReactNode, icon: React.ReactNode}> = ({ tabId, currentTab, children, icon }) => (
-         <button
-            onClick={() => setActiveTab(tabId)}
-            className={`flex items-center justify-center gap-2 w-1/2 py-3 font-semibold text-center focus:outline-none transition-all duration-200 border-b-2 ${
-                currentTab === tabId 
-                ? 'text-green-600 border-green-600' 
-                : 'text-slate-500 hover:text-slate-700 border-transparent hover:border-slate-300'
+    const TabButton: React.FC<{tab: Tab; label: string; icon: React.ReactNode}> = ({ tab, label, icon }) => (
+        <button
+            onClick={() => setActiveTab(tab)}
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeTab === tab 
+                ? 'bg-green-600 text-white' 
+                : 'text-slate-600 hover:bg-slate-200'
             }`}
         >
-            {icon}
-            {children}
+            {icon} {label}
         </button>
     );
 
     return (
-        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
-            <h2 className="text-3xl font-bold text-slate-800 mb-6">Painel do Administrador</h2>
-
-            <div className="flex border-b mb-6">
-                <TabButton tabId="products" currentTab={activeTab} icon={<PackageIcon />}>
-                    Gerenciar Produtos ({products.length})
-                </TabButton>
-                <TabButton tabId="sellers" currentTab={activeTab} icon={<UsersIcon />}>
-                    Gerenciar Vendedores ({sellers.length})
-                </TabButton>
+        <div className="p-4 sm:p-6 lg:p-8">
+            <h1 className="text-3xl font-bold text-slate-900 mb-8">Painel do Administrador</h1>
+            
+            <div className="flex space-x-2 border-b mb-6 overflow-x-auto pb-2">
+                <TabButton tab="reports" label="Relatórios" icon={<ChartBarIcon />} />
+                <TabButton tab="products" label="Produtos" icon={<PackageIcon />} />
+                <TabButton tab="sellers" label="Vendedores" icon={<UsersIcon />} />
+            </div>
+            
+            <div>
+                {renderTabContent()}
             </div>
 
-            {activeTab === 'products' && (
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-slate-700">Lista de Produtos</h3>
-                        <button onClick={() => handleOpenProductModal(null)} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
-                            <PlusIcon />
-                            Adicionar Produto
-                        </button>
-                    </div>
-                    {/* Product Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left text-slate-500">
-                             <thead className="text-xs text-slate-700 uppercase bg-slate-100">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3">Produto</th>
-                                    <th scope="col" className="px-6 py-3">Vendedor</th>
-                                    <th scope="col" className="px-6 py-3">Preço</th>
-                                    <th scope="col" className="px-6 py-3">Estoque</th>
-                                    <th scope="col" className="px-6 py-3 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.map(p => (
-                                    <tr key={p.id} className="bg-white border-b hover:bg-slate-50">
-                                        <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{p.nome}</th>
-                                        <td className="px-6 py-4">{p.vendedor}</td>
-                                        <td className="px-6 py-4">{p.preco}</td>
-                                        <td className="px-6 py-4">{p.estoque}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="flex justify-center gap-2">
-                                                <button onClick={() => handleOpenProductModal(p)} className="p-2 text-blue-600 hover:text-blue-800" aria-label="Editar"><EditIcon /></button>
-                                                <button onClick={() => confirmDeleteProduct(p.id)} className="p-2 text-red-600 hover:text-red-800" aria-label="Excluir"><DeleteIcon /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'sellers' && (
-                <div>
-                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-slate-700">Lista de Vendedores</h3>
-                        <button onClick={() => handleOpenSellerModal(null)} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
-                            <PlusIcon />
-                            Adicionar Vendedor
-                        </button>
-                    </div>
-                    {/* Seller Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left text-slate-500">
-                            <thead className="text-xs text-slate-700 uppercase bg-slate-100">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3">Nome</th>
-                                    <th scope="col" className="px-6 py-3">Status</th>
-                                    <th scope="col" className="px-6 py-3">Plano</th>
-                                    <th scope="col" className="px-6 py-3">E-mail</th>
-                                    <th scope="col" className="px-6 py-3 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sellers.map(s => (
-                                    <tr key={s.id} className="bg-white border-b hover:bg-slate-50">
-                                        <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{s.nomeCompleto}</th>
-                                        <td className="px-6 py-4">{s.status}</td>
-                                        <td className="px-6 py-4">{s.plan}</td>
-                                        <td className="px-6 py-4">{s.email}</td>
-                                        <td className="px-6 py-4 text-center">
-                                             <div className="flex justify-center gap-2">
-                                                <button onClick={() => handleOpenReviewsModal(s)} className="p-2 text-yellow-500 hover:text-yellow-700" aria-label="Ver avaliações"><StarIcon/></button>
-                                                <button onClick={() => handleOpenSellerModal(s)} className="p-2 text-blue-600 hover:text-blue-800" aria-label="Editar"><EditIcon /></button>
-                                                <button onClick={() => confirmDeleteSeller(s.id)} className="p-2 text-red-600 hover:text-red-800" aria-label="Excluir"><DeleteIcon /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-            
-            <ProductFormModal 
+            <ProductFormModal
                 isOpen={isProductModalOpen}
-                onClose={handleCloseProductModal}
-                onSubmit={handleProductSubmit}
-                product={editingProduct}
+                onClose={() => setIsProductModalOpen(false)}
+                onSave={handleSaveProduct}
+                productToEdit={productToEdit}
+                sellers={sellers}
+                onGenerateDescription={handleGenerateDescription}
+                isGenerating={isGenerating}
             />
 
              <SellerFormModal
                 isOpen={isSellerModalOpen}
-                onClose={handleCloseSellerModal}
-                onSubmit={handleSellerSubmit}
-                seller={editingSeller}
-                products={products}
+                onClose={() => setIsSellerModalOpen(false)}
+                onSave={handleSaveSeller}
+                sellerToEdit={sellerToEdit}
             />
-
-            <SellerReviewsModal
-                isOpen={isReviewsModalOpen}
-                onClose={handleCloseReviewsModal}
-                seller={reviewingSeller}
-            />
-
         </div>
     );
 }

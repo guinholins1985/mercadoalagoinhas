@@ -1,4 +1,6 @@
+
 import React from 'react';
+// FIX: Corrected import path for User type
 import type { User } from '../types';
 
 interface HeaderProps {

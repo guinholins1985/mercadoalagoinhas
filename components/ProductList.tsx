@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ProductCard } from './ProductCard';
+// FIX: Corrected import path for Product type
 import type { Product } from '../types';
 
 interface ProductListProps {

@@ -1,4 +1,6 @@
+
 import React from 'react';
+// FIX: Corrected import paths for types and constants
 import type { Seller } from '../types';
 import { SELLER_REVIEWS } from '../constants'; // Mock data for reviews
 import { StarRating } from './StarRating';

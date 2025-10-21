@@ -1,158 +1,139 @@
-import type { User, Product, Seller, SellerReview } from './types';
+import type { Product, User, Seller, Review } from './types';
 
+// Mock Users
 export const USERS: User[] = [
-    { id: 'u1', name: 'Ana Silva (Cliente)', type: 'customer' },
-    { id: 'u2', name: 'Carlos Souza (Cliente)', type: 'customer' },
-    { id: 'admin-user', name: 'Administrador', type: 'admin' },
+  { id: 'user-1', name: 'Ana Silva', email: 'ana@example.com', type: 'customer' },
+  { id: 'user-2', name: 'Admin', email: 'ad', type: 'admin' },
 ];
 
+// Mock Sellers
 export const SELLERS: Seller[] = [
-    {
-        id: 's1',
-        nomeCompleto: 'Fazenda Orgânica Sol Nascente',
-        email: 'contato@solnascente.com',
-        telefone: '71988776655',
-        cpfCnpj: '12.345.678/0001-99',
-        enderecoCompleto: 'Rua das Flores, 123, Alagoinhas, BA',
-        categoriaDeProduto: 'Orgânicos e Hortifruti',
-        status: 'Aprovado',
-        plan: 'Premium',
-        subscriptionStatus: 'Ativa',
-        vencimentoAssinatura: '2024-12-31',
-    },
-    {
-        id: 's2',
-        nomeCompleto: 'Bolos da Vovó Juju',
-        email: 'juju@bolos.com',
-        telefone: '71999887766',
-        cpfCnpj: '98.765.432/0001-11',
-        enderecoCompleto: 'Avenida Principal, 456, Alagoinhas, BA',
-        categoriaDeProduto: 'Confeitaria',
-        status: 'Aprovado',
-        plan: 'Básico',
-        subscriptionStatus: 'Ativa',
-        vencimentoAssinatura: '2024-11-15',
-    },
-    {
-        id: 's3',
-        nomeCompleto: 'Artesanato Mãos de Fada',
-        email: 'contato@maosdefada.com',
-        telefone: '71987654321',
-        cpfCnpj: '123.456.789-00',
-        enderecoCompleto: 'Praça da Matriz, 789, Alagoinhas, BA',
-        categoriaDeProduto: 'Artesanato',
-        status: 'Pendente',
-        plan: 'Básico',
-        subscriptionStatus: 'Ativa',
-        vencimentoAssinatura: '2024-10-20',
-    },
+  {
+    id: 'seller-1',
+    nomeCompleto: 'João Pereira da Silva',
+    nomeNegocio: 'Sítio do João',
+    email: 'joao.sitio@email.com',
+    telefone: '75999998888',
+    status: 'Aprovado',
+    dataCadastro: '2023-01-15',
+    subscriptionStatus: 'Ativa',
+    rating: 4.8,
+  },
+  {
+    id: 'seller-2',
+    nomeCompleto: 'Maria Oliveira Souza',
+    nomeNegocio: 'Delícias da Maria',
+    email: 'maria.delicias@email.com',
+    telefone: '75988887777',
+    status: 'Aprovado',
+    dataCadastro: '2023-02-20',
+    subscriptionStatus: 'Ativa',
+    rating: 4.5,
+  },
+  {
+    id: 'seller-3',
+    nomeCompleto: 'Carlos Andrade',
+    nomeNegocio: 'Artesanato Mãos de Ouro',
+    email: 'carlos.artes@email.com',
+    telefone: '75977776666',
+    status: 'Pendente',
+    dataCadastro: '2023-03-10',
+    subscriptionStatus: 'Inativa',
+    rating: 0,
+  },
 ];
 
+// Mock Products
 export const PRODUCTS: Product[] = [
-    {
-        id: 'p1',
-        nome: 'Cesta de Orgânicos Pequena',
-        descricao: 'Uma seleção de vegetais e frutas frescas da estação, colhidas no dia. Ideal para uma pessoa ou casal.',
-        preco: 'R$ 45,00',
-        categoria: 'Cestas',
-        imagem: 'https://picsum.photos/seed/p1/400/300',
-        vendedor: 'Fazenda Orgânica Sol Nascente',
-        telefone: '71988776655',
-        estoque: 15,
-        destaque: true,
-        tags: ['orgânico', 'fresco', 'saudável', 'vegetais'],
-    },
-    {
-        id: 'p2',
-        nome: 'Bolo de Chocolate com Cobertura',
-        descricao: 'Bolo caseiro fofinho com uma generosa camada de cobertura de brigadeiro. Perfeito para o seu café da tarde.',
-        preco: 'R$ 35,00',
-        categoria: 'Confeitaria',
-        imagem: 'https://picsum.photos/seed/p2/400/300',
-        vendedor: 'Bolos da Vovó Juju',
-        telefone: '71999887766',
-        estoque: 8,
-        destaque: false,
-        tags: ['bolo', 'chocolate', 'doce', 'festa'],
-    },
-    {
-        id: 'p3',
-        nome: 'Pano de Prato Bordado à Mão',
-        descricao: 'Lindo pano de prato feito em algodão de alta qualidade, com bordados de flores do campo. Peça única.',
-        preco: 'R$ 25,00',
-        categoria: 'Artesanato',
-        imagem: 'https://picsum.photos/seed/p3/400/300',
-        vendedor: 'Artesanato Mãos de Fada',
-        telefone: '71987654321',
-        estoque: 20,
-        destaque: true,
-        tags: ['artesanato', 'cozinha', 'bordado', 'presente'],
-    },
-    {
-        id: 'p4',
-        nome: 'Geleia de Abacaxi com Pimenta',
-        descricao: 'Geleia artesanal agridoce, perfeita para acompanhar queijos, torradas e carnes. Feita com ingredientes selecionados.',
-        preco: 'R$ 18,00',
-        categoria: 'Geleias',
-        imagem: 'https://picsum.photos/seed/p4/400/300',
-        vendedor: 'Fazenda Orgânica Sol Nascente',
-        telefone: '71988776655',
-        estoque: 0,
-        destaque: false,
-        tags: ['geleia', 'artesanal', 'agridoce', 'pimenta'],
-    },
-     {
-        id: 'p5',
-        nome: 'Torta de Limão Merengada',
-        descricao: 'Uma fatia generosa da nossa famosa torta de limão com base crocante e um merengue suíço maçaricado.',
-        preco: 'R$ 15,00 / fatia',
-        categoria: 'Confeitaria',
-        imagem: 'https://picsum.photos/seed/p5/400/300',
-        vendedor: 'Bolos da Vovó Juju',
-        telefone: '71999887766',
-        estoque: 10,
-        destaque: true,
-        tags: ['torta', 'limão', 'doce', 'merengue'],
-    },
+  {
+    id: 'prod-1',
+    name: 'Cesta de Orgânicos',
+    description: 'Uma seleção de frutas e vegetais frescos e orgânicos, colhidos na hora.',
+    price: 85.00,
+    category: 'Cestas',
+    imageUrl: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    sellerId: 'seller-1',
+    sellerName: 'Sítio do João',
+    rating: 4.8,
+  },
+  {
+    id: 'prod-2',
+    name: 'Bolo de Chocolate Caseiro',
+    description: 'Bolo fofinho de chocolate com cobertura cremosa, feito com ingredientes de primeira.',
+    price: 45.00,
+    category: 'Doces',
+    imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    sellerId: 'seller-2',
+    sellerName: 'Delícias da Maria',
+    rating: 4.9,
+  },
+  {
+    id: 'prod-3',
+    name: 'Abacaxi Pérola (Unidade)',
+    description: 'Abacaxi doce e suculento, cultivado sem agrotóxicos.',
+    price: 8.00,
+    category: 'Frutas',
+    imageUrl: 'https://images.unsplash.com/photo-1587883130588-fe059b588265?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    sellerId: 'seller-1',
+    sellerName: 'Sítio do João',
+    rating: 4.7,
+  },
+   {
+    id: 'prod-4',
+    name: 'Pão de Queijo Congelado (500g)',
+    description: 'Pão de queijo tradicional mineiro, pronto para assar.',
+    price: 25.00,
+    category: 'Salgados',
+    imageUrl: 'https://images.unsplash.com/photo-1593328223414-11810a9b4f49?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    sellerId: 'seller-2',
+    sellerName: 'Delícias da Maria',
+    rating: 4.6,
+  },
+  {
+    id: 'prod-5',
+    name: 'Vaso de Cerâmica Artesanal',
+    description: 'Vaso decorativo feito à mão por artesãos locais. Perfeito para plantas pequenas.',
+    price: 60.00,
+    category: 'Artesanato',
+    imageUrl: 'https://images.unsplash.com/photo-1570913193206-935a84277717?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    sellerId: 'seller-3',
+    sellerName: 'Artesanato Mãos de Ouro',
+    rating: 5.0,
+  }
 ];
 
-export const PLAN_DETAILS = {
-    'Básico': {
-        price: 'R$ 19,90/mês',
-        productLimit: 5,
-        features: ['Até 5 produtos', 'Página básica do vendedor', 'Suporte por e-mail'],
-    },
-    'Premium': {
-        price: 'R$ 49,90/mês',
-        productLimit: Infinity,
-        features: ['Produtos ilimitados', 'Destaque nas buscas', 'Página personalizada', 'Suporte prioritário'],
-    },
-};
-
-
-export const SELLER_REVIEWS: SellerReview[] = [
+// Mock Reviews for SellerReviewsModal
+export const SELLER_REVIEWS: Review[] = [
     {
-        id: 'r1',
-        sellerId: 's1',
-        author: 'Ana Silva',
-        rating: 5,
-        comment: 'Os produtos da Fazenda Sol Nascente são sempre frescos e de ótima qualidade. A entrega é rápida e o atendimento excelente!',
-        date: '2024-07-15'
-    },
-    {
-        id: 'r2',
-        sellerId: 's1',
-        author: 'Carlos Souza',
-        rating: 4,
-        comment: 'Gostei muito da cesta de orgânicos. Veio bem variada. Só gostaria que tivesse mais opções de frutas.',
-        date: '2024-07-10'
-    },
-    {
-        id: 'r3',
-        sellerId: 's2',
+        id: 'review-1',
+        sellerId: 'seller-1',
         author: 'Mariana Costa',
         rating: 5,
-        comment: 'O bolo de chocolate da Vovó Juju é simplesmente divino! O melhor que já comi. Super recomendo.',
-        date: '2024-07-20'
+        date: '2023-08-10',
+        comment: 'Produtos sempre frescos e de ótima qualidade! A cesta de orgânicos é maravilhosa.'
     },
+    {
+        id: 'review-2',
+        sellerId: 'seller-1',
+        author: 'Pedro Almeida',
+        rating: 4,
+        date: '2023-08-05',
+        comment: 'Gostei muito dos produtos, só a entrega que demorou um pouco mais que o esperado.'
+    },
+    {
+        id: 'review-3',
+        sellerId: 'seller-2',
+        author: 'Carla Dias',
+        rating: 5,
+        date: '2023-08-12',
+        comment: 'O bolo de chocolate é simplesmente divino! Recomendo a todos.'
+    },
+    {
+        id: 'review-4',
+        sellerId: 'seller-2',
+        author: 'Fernanda Lima',
+        rating: 5,
+        date: '2023-07-28',
+        comment: 'Tudo que eu compro da Maria é delicioso. O pão de queijo é um espetáculo.'
+    }
 ];

@@ -1,112 +1,64 @@
-import React, { useState } from 'react';
-import type { User, Product, Seller } from './types';
-import { PRODUCTS, USERS, SELLERS } from './constants';
-import { LoginPage } from './components/LoginPage';
+
+import React, { useState, useMemo } from 'react';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { ProductList } from './components/ProductList';
+import { LoginPage } from './components/LoginPage';
 import { AdminDashboard } from './components/AdminDashboard';
+import { PRODUCTS, USERS, SELLERS } from './constants';
+import type { User, Product, Seller } from './types';
 
 function App() {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [products, setProducts] = useState<Product[]>(PRODUCTS);
-    const [sellers, setSellers] = useState<Seller[]>(SELLERS);
-    const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // In a real app, this data would come from an API
+  const [products] = useState<Product[]>(PRODUCTS);
+  const [sellers] = useState<Seller[]>(SELLERS);
+  
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+  };
 
-    const handleLogin = (user: User) => {
-        setCurrentUser(user);
-    };
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
 
-    const handleLogout = () => {
-        setCurrentUser(null);
-    };
+  const handleSearch = (query: string) => {
+    setSearchTerm(query.toLowerCase());
+  };
 
-    const handleSearch = (query: string) => {
-        setSearchTerm(query.toLowerCase());
-    };
-
-    // Admin product functions
-    const handleAddProduct = (productData: Omit<Product, 'id'>) => {
-        const newProduct: Product = {
-            id: `p${Date.now()}`,
-            ...productData,
-        };
-        setProducts(prevProducts => [newProduct, ...prevProducts]);
-    };
-
-    const handleUpdateProduct = (updatedProduct: Product) => {
-        setProducts(prevProducts =>
-            prevProducts.map(p => (p.id === updatedProduct.id ? updatedProduct : p))
-        );
-    };
-
-    const handleDeleteProduct = (productId: string) => {
-        setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
-    };
-
-    // Admin seller functions
-    const handleAddSeller = (sellerData: Omit<Seller, 'id'>) => {
-        const newSeller: Seller = {
-            id: `s${Date.now()}`,
-            ...sellerData,
-        };
-        setSellers(prevSellers => [newSeller, ...prevSellers]);
-    };
-
-    const handleUpdateSeller = (updatedSeller: Seller) => {
-        setSellers(prevSellers =>
-            prevSellers.map(s => (s.id === updatedSeller.id ? updatedSeller : s))
-        );
-    };
-
-    const handleDeleteSeller = (sellerId: string) => {
-        setSellers(prevSellers => prevSellers.filter(s => s.id !== sellerId));
-    };
-
-
-    const filteredProducts = products.filter(product => {
-        const query = searchTerm.trim();
-        if (!query) return true;
-
-        const nameMatch = product.nome.toLowerCase().includes(query);
-        const categoryMatch = product.categoria.toLowerCase().includes(query);
-        const tagMatch = product.tags.some(tag => tag.toLowerCase().includes(query));
-        const descriptionMatch = product.descricao.toLowerCase().includes(query);
-
-        return nameMatch || categoryMatch || tagMatch || descriptionMatch;
-    });
-
-    if (!currentUser) {
-        return <LoginPage onLogin={handleLogin} onRegisterSeller={handleAddSeller} />;
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) {
+      return products;
     }
-
-    const isAdmin = currentUser.type === 'admin';
-
-    return (
-        <div className="bg-slate-100 min-h-screen font-sans">
-            <main className="container mx-auto px-4 py-8 md:py-12">
-                <Header user={currentUser} onLogout={handleLogout} />
-                
-                {isAdmin ? (
-                    <AdminDashboard 
-                        products={products}
-                        sellers={sellers}
-                        onAddProduct={handleAddProduct}
-                        onUpdateProduct={handleUpdateProduct}
-                        onDeleteProduct={handleDeleteProduct}
-                        onAddSeller={handleAddSeller}
-                        onUpdateSeller={handleUpdateSeller}
-                        onDeleteSeller={handleDeleteSeller}
-                    />
-                ) : (
-                    <>
-                        <SearchBar onSearch={handleSearch} />
-                        <ProductList products={filteredProducts} searchTerm={searchTerm} />
-                    </>
-                )}
-            </main>
-        </div>
+    return products.filter(product => 
+      product.name.toLowerCase().includes(searchTerm) ||
+      product.description.toLowerCase().includes(searchTerm) ||
+      product.category.toLowerCase().includes(searchTerm) ||
+      product.sellerName.toLowerCase().includes(searchTerm)
     );
+  }, [products, searchTerm]);
+
+  if (!currentUser) {
+    return <LoginPage onLogin={handleLogin} users={USERS} />;
+  }
+
+  return (
+    <div className="bg-slate-50 min-h-screen font-sans">
+      <Header user={currentUser} onLogout={handleLogout} />
+      <main className="container mx-auto px-4 pb-12">
+        {currentUser.type === 'admin' ? (
+          <AdminDashboard initialProducts={products} initialSellers={sellers} />
+        ) : (
+          <>
+            <SearchBar onSearch={handleSearch} />
+            <ProductList products={filteredProducts} searchTerm={searchTerm} />
+          </>
+        )}
+      </main>
+    </div>
+  );
 }
 
 export default App;

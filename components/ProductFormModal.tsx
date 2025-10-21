@@ -1,240 +1,147 @@
+
 import React, { useState, useEffect } from 'react';
-import type { Product } from '../types';
-import { GoogleGenAI } from "@google/genai";
+import type { Product, Seller } from '../types';
+import { XCircleIcon } from './icons/XCircleIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 
 interface ProductFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (productData: Product | Omit<Product, 'id'>) => void;
-    product: Product | null; // null for creating, product object for editing
+    onSave: (product: Omit<Product, 'id' | 'rating'> & { id?: string }) => void;
+    productToEdit: Product | null;
+    sellers: Seller[];
+    onGenerateDescription?: (productName: string) => Promise<string>;
+    isGenerating?: boolean;
 }
 
-const emptyProduct: Omit<Product, 'id'> = {
-    nome: '',
-    descricao: '',
-    preco: '',
-    categoria: '',
-    imagem: 'https://picsum.photos/seed/newproduct/400/300', // Default image
-    vendedor: '',
-    telefone: '',
-    estoque: 0,
-    destaque: false,
-    tags: [],
-};
+export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, sellers, onGenerateDescription, isGenerating }: ProductFormModalProps) {
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [price, setPrice] = useState(0);
+    const [category, setCategory] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
+    const [sellerId, setSellerId] = useState('');
 
-export function ProductFormModal({ isOpen, onClose, onSubmit, product }: ProductFormModalProps) {
-    const [formData, setFormData] = useState<Product | Omit<Product, 'id'>>(product || emptyProduct);
-    const [tagInput, setTagInput] = useState('');
-    const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-    const [isGenerating, setIsGenerating] = useState(false);
-    
     useEffect(() => {
-        // When the product prop changes, update the form data.
-        const initialData = product ? { ...product, estoque: product.estoque ?? 0, tags: product.tags || [] } : { ...emptyProduct, tags: [] };
-        setFormData(initialData);
-        setSuggestedTags([]); // Clear suggestions when modal opens for a new product
-        setIsGenerating(false);
-    }, [product, isOpen]);
-
-    if (!isOpen) return null;
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
-        
-        if (type === 'checkbox') {
-             const { checked } = e.target as HTMLInputElement;
-             setFormData(prev => ({ ...prev, [name]: checked }));
-        } else if (type === 'number') {
-             setFormData(prev => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
+        if (productToEdit) {
+            setName(productToEdit.name);
+            setDescription(productToEdit.description);
+            setPrice(productToEdit.price);
+            setCategory(productToEdit.category);
+            setImageUrl(productToEdit.imageUrl);
+            setSellerId(productToEdit.sellerId);
         } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
+            // Reset form
+            setName('');
+            setDescription('');
+            setPrice(0);
+            setCategory('');
+            setImageUrl('');
+            setSellerId('');
         }
-    };
+    }, [productToEdit, isOpen]);
 
-    const handleAddTag = (tagToAdd: string) => {
-        const newTag = tagToAdd.trim().toLowerCase();
-        if (newTag && !(formData.tags ?? []).includes(newTag)) {
-            setFormData(prev => ({ ...prev, tags: [...(prev.tags ?? []), newTag] }));
-        }
-        setTagInput('');
-        // Remove the tag from suggestions if it was added
-        setSuggestedTags(prev => prev.filter(t => t.toLowerCase() !== newTag));
-    };
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setFormData(prev => ({ ...prev, tags: (prev.tags ?? []).filter(tag => tag !== tagToRemove) }));
-    };
-
-    const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            handleAddTag(tagInput);
-        }
-    };
-
-    const handleGenerateTags = async () => {
-        if (!formData.nome || !formData.descricao) {
-            alert('Por favor, preencha o nome e a descrição do produto para gerar tags.');
-            return;
-        }
-        setIsGenerating(true);
-        setSuggestedTags([]);
-
-        try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const prompt = `Baseado no nome "${formData.nome}" e na descrição "${formData.descricao}", sugira 5 tags de uma ou duas palavras, em português, separadas por vírgula, para categorizar este produto em um site de e-commerce. Não inclua a categoria "${formData.categoria}" nas tags. Retorne apenas as tags separadas por vírgula.`;
-            
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-            });
-
-            const suggestions = response.text
-                .split(',')
-                .map(tag => tag.trim().toLowerCase())
-                .filter(tag => tag && !(formData.tags ?? []).includes(tag)); // Filter out empty and existing tags
-            
-            setSuggestedTags(suggestions);
-
-        } catch (error) {
-            console.error("Erro ao gerar tags:", error);
-            alert("Ocorreu um erro ao tentar sugerir tags. Tente novamente.");
-        } finally {
-            setIsGenerating(false);
+    const handleGenerateClick = async () => {
+        if (onGenerateDescription && name) {
+            const generatedDesc = await onGenerateDescription(name);
+            if (generatedDesc) {
+                setDescription(generatedDesc);
+            }
         }
     };
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.nome || !formData.preco || !formData.categoria) {
-            alert('Por favor, preencha os campos obrigatórios: Nome, Preço e Categoria.');
+        const seller = sellers.find(s => s.id === sellerId);
+        if (!seller) {
+            alert("Selecione um vendedor válido.");
             return;
         }
-        if (formData.estoque < 0) {
-            alert('O estoque não pode ser um número negativo.');
-            return;
-        }
-        onSubmit(formData);
+
+        onSave({
+            id: productToEdit?.id,
+            name,
+            description,
+            price,
+            category,
+            imageUrl,
+            sellerId,
+            sellerName: seller.nomeNegocio,
+        });
+        onClose();
     };
 
+    if (!isOpen) return null;
+
     return (
-        <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start p-4 pt-16 sm:items-center" 
-            aria-modal="true" 
-            role="dialog"
-            onClick={onClose}
-        >
-            <div 
-                className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-                onClick={e => e.stopPropagation()} // Prevent closing modal when clicking inside
-            >
-                <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-4">{product ? 'Editar Produto' : 'Adicionar Novo Produto'}</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="nome" className="block text-sm font-medium text-slate-700">Nome do Produto</label>
-                            <input type="text" name="nome" id="nome" value={formData.nome} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
-                        </div>
-                        <div>
-                            <label htmlFor="descricao" className="block text-sm font-medium text-slate-700">Descrição</label>
-                            <textarea name="descricao" id="descricao" value={formData.descricao} onChange={handleChange} rows={3} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"></textarea>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                             <div>
-                                <label htmlFor="preco" className="block text-sm font-medium text-slate-700">Preço (ex: R$ 40,00)</label>
-                                <input type="text" name="preco" id="preco" value={formData.preco} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
-                            </div>
-                             <div>
-                                <label htmlFor="estoque" className="block text-sm font-medium text-slate-700">Estoque</label>
-                                <input type="number" name="estoque" id="estoque" value={formData.estoque} onChange={handleChange} min="0" className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="categoria" className="block text-sm font-medium text-slate-700">Categoria</label>
-                            <input type="text" name="categoria" id="categoria" value={formData.categoria} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
-                        </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <form onSubmit={handleSubmit} className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-slate-800">{productToEdit ? 'Editar Produto' : 'Novo Produto'}</h2>
+                        <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                           <XCircleIcon />
+                        </button>
+                    </div>
 
-                        {/* TAGS SECTION */}
+                    <div className="space-y-4">
                         <div>
-                            <div className="flex justify-between items-center">
-                                <label htmlFor="tags" className="block text-sm font-medium text-slate-700">Tags</label>
-                                <button
-                                    type="button"
-                                    onClick={handleGenerateTags}
-                                    disabled={isGenerating}
-                                    className="flex items-center gap-1.5 text-sm text-indigo-600 font-semibold hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait transition-colors"
-                                >
-                                    <SparklesIcon />
-                                    {isGenerating ? 'Gerando...' : 'Sugerir com IA'}
-                                </button>
+                            <label htmlFor="name" className="block text-sm font-medium text-slate-700">Nome do Produto</label>
+                            <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 block w-full input-style" />
+                        </div>
+                        <div>
+                             <div className="flex justify-between items-center">
+                                <label htmlFor="description" className="block text-sm font-medium text-slate-700">Descrição</label>
+                                {onGenerateDescription && (
+                                    <button 
+                                        type="button" 
+                                        onClick={handleGenerateClick}
+                                        disabled={isGenerating || !name}
+                                        className="flex items-center gap-1 text-xs text-green-600 font-semibold hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <SparklesIcon />
+                                        {isGenerating ? 'Gerando...' : 'Gerar com IA'}
+                                    </button>
+                                )}
                             </div>
-                            <div className="mt-1 flex flex-wrap gap-2 items-center p-2 border border-slate-300 rounded-md">
-                                {(formData.tags ?? []).map(tag => (
-                                    <span key={tag} className="flex items-center gap-1.5 bg-green-100 text-green-800 text-sm font-medium px-2 py-0.5 rounded-full">
-                                        {tag}
-                                        <button type="button" onClick={() => handleRemoveTag(tag)} className="text-green-600 hover:text-green-800">&times;</button>
-                                    </span>
+                            <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required rows={3} className="mt-1 block w-full input-style"></textarea>
+                        </div>
+                         <div>
+                            <label htmlFor="seller" className="block text-sm font-medium text-slate-700">Vendedor</label>
+                            <select id="seller" value={sellerId} onChange={e => setSellerId(e.target.value)} required className="mt-1 block w-full input-style">
+                                <option value="" disabled>Selecione um vendedor</option>
+                                {sellers.filter(s => s.status === 'Aprovado').map(seller => (
+                                    <option key={seller.id} value={seller.id}>{seller.nomeNegocio}</option>
                                 ))}
-                                <input
-                                    type="text"
-                                    id="tags"
-                                    value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
-                                    onKeyDown={handleTagInputKeyDown}
-                                    placeholder="Adicionar tag..."
-                                    className="flex-grow p-1 outline-none bg-transparent"
-                                />
-                            </div>
-                            {suggestedTags.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    <span className="text-sm text-slate-600 self-center">Sugestões:</span>
-                                    {suggestedTags.map(tag => (
-                                        <button
-                                            key={tag}
-                                            type="button"
-                                            onClick={() => handleAddTag(tag)}
-                                            className="text-xs font-semibold bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full hover:bg-indigo-200"
-                                        >
-                                           + {tag}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            </select>
                         </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="vendedor" className="block text-sm font-medium text-slate-700">Vendedor</label>
-                                <input type="text" name="vendedor" id="vendedor" value={formData.vendedor} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
+                                <label htmlFor="price" className="block text-sm font-medium text-slate-700">Preço (R$)</label>
+                                <input type="number" id="price" value={price} onChange={e => setPrice(Number(e.target.value))} required min="0" step="0.01" className="mt-1 block w-full input-style" />
                             </div>
                             <div>
-                                <label htmlFor="telefone" className="block text-sm font-medium text-slate-700">Telefone (WhatsApp)</label>
-                                <input type="text" name="telefone" id="telefone" value={formData.telefone} onChange={handleChange} placeholder="71999999999" className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
+                                <label htmlFor="category" className="block text-sm font-medium text-slate-700">Categoria</label>
+                                <input type="text" id="category" value={category} onChange={e => setCategory(e.target.value)} required className="mt-1 block w-full input-style" />
                             </div>
                         </div>
-
                         <div>
-                            <label htmlFor="imagem" className="block text-sm font-medium text-slate-700">URL da Imagem</label>
-                            <input type="url" name="imagem" id="imagem" value={formData.imagem} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
+                            <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-700">URL da Imagem</label>
+                            <input type="url" id="imageUrl" value={imageUrl} onChange={e => setImageUrl(e.target.value)} required className="mt-1 block w-full input-style" />
                         </div>
-                        
-                        <div className="flex items-center">
-                            <input type="checkbox" name="destaque" id="destaque" checked={formData.destaque ?? false} onChange={handleChange} className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-                            <label htmlFor="destaque" className="ml-2 block text-sm text-slate-900">Marcar como Destaque</label>
-                        </div>
+                    </div>
 
-                        <div className="flex justify-end gap-4 pt-4 border-t mt-6">
-                            <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">
-                                Cancelar
-                            </button>
-                            <button type="submit" className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
-                                Salvar Produto
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div className="flex justify-end pt-6 mt-6 border-t gap-3">
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">
+                            Cancelar
+                        </button>
+                        <button type="submit" className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                            Salvar Produto
+                        </button>
+                    </div>
+                </form>
             </div>
+            <style>{`.input-style { border-radius: 0.375rem; border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; } .input-style:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px #22c55e; border-color: #22c55e; }`}</style>
         </div>
     );
 }
