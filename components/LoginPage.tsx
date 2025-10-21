@@ -9,9 +9,10 @@ interface LoginPageProps {
     users: User[];
     storeName: string;
     themeColor: string;
+    logoUrl: string | null;
 }
 
-export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeColor }: LoginPageProps) {
+export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeColor, logoUrl }: LoginPageProps) {
     const [loginIdentifier, setLoginIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -62,9 +63,13 @@ export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeCol
                 </button>
 
                 <div className="text-center mb-8">
-                     <h1 className={`text-3xl font-extrabold text-${themeColor}-600`}>
-                        🛒 {storeName}
-                    </h1>
+                     {logoUrl ? (
+                        <img src={logoUrl} alt={`${storeName} logo`} className="h-12 max-w-full mx-auto object-contain mb-2" />
+                    ) : (
+                         <h1 className={`text-3xl font-extrabold text-${themeColor}-600`}>
+                            🛒 {storeName}
+                        </h1>
+                    )}
                     <p className="mt-2 text-slate-600">
                         Acesse sua conta
                     </p>

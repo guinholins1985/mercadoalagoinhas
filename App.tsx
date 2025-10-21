@@ -21,6 +21,7 @@ function App() {
   const [bannerImages, setBannerImages] = useState<string[]>(BANNER_IMAGES);
   const [storeName, setStoreName] = useState('Mercado Alagoinhas');
   const [themeColor, setThemeColor] = useState('green');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -33,6 +34,18 @@ function App() {
 
   const handleSearch = (query: string) => {
     setSearchTerm(query.toLowerCase());
+  };
+
+  const handleSaveChanges = (settings: {
+    bannerImages: string[];
+    storeName: string;
+    themeColor: string;
+    logoUrl: string | null;
+  }) => {
+    setBannerImages(settings.bannerImages);
+    setStoreName(settings.storeName);
+    setThemeColor(settings.themeColor);
+    setLogoUrl(settings.logoUrl);
   };
 
   const filteredProducts = useMemo(() => {
@@ -55,18 +68,19 @@ function App() {
         onLoginClick={() => setIsLoginModalOpen(true)}
         storeName={storeName}
         themeColor={themeColor}
+        logoUrl={logoUrl}
       />
       <main className="container mx-auto px-4 pb-12">
         {currentUser?.type === 'admin' ? (
           <AdminDashboard 
             initialProducts={products} 
             initialSellers={sellers}
-            bannerImages={bannerImages}
-            onBannerImagesChange={setBannerImages}
-            storeName={storeName}
-            onStoreNameChange={setStoreName}
-            themeColor={themeColor}
-            onThemeColorChange={setThemeColor}
+            initialBannerImages={bannerImages}
+            initialStoreName={storeName}
+            initialThemeColor={themeColor}
+            initialLogoUrl={logoUrl}
+            onSaveChanges={handleSaveChanges}
+            onLogout={handleLogout}
           />
         ) : (
           <>
@@ -85,6 +99,7 @@ function App() {
         users={USERS}
         storeName={storeName}
         themeColor={themeColor}
+        logoUrl={logoUrl}
       />
     </div>
   );

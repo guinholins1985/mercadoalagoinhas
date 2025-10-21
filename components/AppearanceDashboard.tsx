@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { DeleteIcon } from './icons/DeleteIcon';
 import { PlusIcon } from './icons/PlusIcon';
 import { CheckIcon } from './icons/CheckIcon';
@@ -10,6 +10,8 @@ interface AppearanceDashboardProps {
     onStoreNameChange: (name: string) => void;
     themeColor: string;
     onThemeColorChange: (color: string) => void;
+    logoUrl: string | null;
+    onLogoUrlChange: (url: string | null) => void;
 }
 
 const availableThemes = [
@@ -27,7 +29,11 @@ export function AppearanceDashboard({
     onStoreNameChange,
     themeColor,
     onThemeColorChange,
+    logoUrl,
+    onLogoUrlChange,
 }: AppearanceDashboardProps) {
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleBannerChange = (index: number, value: string) => {
         const newBanners = [...bannerImages];
@@ -42,6 +48,23 @@ export function AppearanceDashboard({
     const handleRemoveBanner = (index: number) => {
         const newBanners = bannerImages.filter((_, i) => i !== index);
         onBannerImagesChange(newBanners);
+    };
+
+    const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            if (logoUrl?.startsWith('blob:')) {
+                URL.revokeObjectURL(logoUrl);
+            }
+            onLogoUrlChange(URL.createObjectURL(file));
+        }
+    };
+
+    const handleRemoveLogo = () => {
+        if (logoUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(logoUrl);
+        }
+        onLogoUrlChange(null);
     };
     
     const inputClasses = `border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
@@ -93,10 +116,46 @@ export function AppearanceDashboard({
 
                 {/* Logo and Template Settings */}
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-slate-700 mb-4">Logo e Tema</h3>
+                    <h3 className="text-lg font-semibold text-slate-700 mb-4">Identidade Visual</h3>
                     <div className="space-y-6">
+                         <div>
+                            <label className="block text-sm font-medium text-slate-700">Logo da Loja</label>
+                            <div className="mt-2 flex items-center gap-4">
+                                <div className="w-28 h-14 flex items-center justify-center bg-slate-100 rounded border p-1">
+                                    {logoUrl ? (
+                                        <img src={logoUrl} alt="Logo da loja" className="max-w-full max-h-full object-contain" />
+                                    ) : (
+                                        <span className="text-xs text-slate-500 text-center">Sem logo</span>
+                                    )}
+                                </div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleLogoChange}
+                                    accept="image/png, image/jpeg, image/gif, image/svg+xml"
+                                    className="hidden"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`px-3 py-1.5 text-sm bg-white border border-slate-300 text-slate-700 font-semibold rounded-md hover:bg-slate-50`}
+                                >
+                                    Alterar Logo
+                                </button>
+                                {logoUrl && (
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveLogo}
+                                        className="text-sm text-red-600 hover:underline"
+                                    >
+                                        Remover
+                                    </button>
+                                )}
+                            </div>
+                            <p className="mt-1 text-xs text-slate-500">Recomendado: imagem horizontal (.png ou .svg com fundo transparente).</p>
+                        </div>
                         <div>
-                            <label htmlFor="storeName" className="block text-sm font-medium text-slate-700">Nome da Loja (usado como logo)</label>
+                            <label htmlFor="storeName" className="block text-sm font-medium text-slate-700">Nome da Loja (usado se não houver logo)</label>
                             <input
                                 type="text"
                                 id="storeName"

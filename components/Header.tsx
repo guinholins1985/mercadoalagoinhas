@@ -8,9 +8,10 @@ interface HeaderProps {
     onLoginClick: () => void;
     storeName: string;
     themeColor: string;
+    logoUrl: string | null;
 }
 
-export function Header({ user, onLogout, onLoginClick, storeName, themeColor }: HeaderProps) {
+export function Header({ user, onLogout, onLoginClick, storeName, themeColor, logoUrl }: HeaderProps) {
     const welcomeName = user?.type === 'admin' ? 'Administrador' : user?.name;
     
     return (
@@ -19,11 +20,15 @@ export function Header({ user, onLogout, onLoginClick, storeName, themeColor }: 
                 <div className="flex justify-between items-center py-3">
                     {/* Left side: Logo */}
                     <div className="flex-shrink-0">
-                         <h1 className={`text-2xl md:text-3xl font-extrabold text-${themeColor}-600`}>
-                            <a href="/" aria-label={`Página inicial do ${storeName}`}>
-                                🛒 {storeName}
-                            </a>
-                        </h1>
+                         <a href="/" aria-label={`Página inicial do ${storeName}`}>
+                            {logoUrl ? (
+                                <img src={logoUrl} alt={`${storeName} logo`} className="h-10 max-w-xs object-contain" />
+                            ) : (
+                                <h1 className={`text-2xl md:text-3xl font-extrabold text-${themeColor}-600`}>
+                                    🛒 {storeName}
+                                </h1>
+                            )}
+                        </a>
                     </div>
 
                     {/* Right side: Actions */}

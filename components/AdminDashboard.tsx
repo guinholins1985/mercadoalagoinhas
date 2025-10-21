@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Product, Seller, Transaction } from '../types';
 import { ProductFormModal } from './ProductFormModal';
 import { SellerFormModal } from './SellerFormModal';
@@ -16,31 +16,39 @@ import { ChartBarIcon } from './icons/ChartBarIcon';
 import { CreditCardIcon } from './icons/CreditCardIcon';
 import { CogIcon } from './icons/CogIcon';
 import { EyeIcon } from './icons/EyeIcon';
+import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 import { GoogleGenAI } from "@google/genai";
 import { TRANSACTIONS } from '../constants'; // Import mock transactions
 
 
 type Tab = 'overview' | 'products' | 'sellers' | 'financial' | 'appearance' | 'settings';
 
+interface AdminDashboardProps {
+    initialProducts: Product[];
+    initialSellers: Seller[];
+    initialBannerImages: string[];
+    initialStoreName: string;
+    initialThemeColor: string;
+    initialLogoUrl: string | null;
+    onSaveChanges: (settings: {
+        bannerImages: string[];
+        storeName: string;
+        themeColor: string;
+        logoUrl: string | null;
+    }) => void;
+    onLogout: () => void;
+}
+
 export function AdminDashboard({
     initialProducts,
     initialSellers,
-    bannerImages,
-    onBannerImagesChange,
-    storeName,
-    onStoreNameChange,
-    themeColor,
-    onThemeColorChange,
-}: {
-    initialProducts: Product[];
-    initialSellers: Seller[];
-    bannerImages: string[];
-    onBannerImagesChange: (images: string[]) => void;
-    storeName: string;
-    onStoreNameChange: (name: string) => void;
-    themeColor: string;
-    onThemeColorChange: (color: string) => void;
-}) {
+    initialBannerImages,
+    initialStoreName,
+    initialThemeColor,
+    initialLogoUrl,
+    onSaveChanges,
+    onLogout
+}: AdminDashboardProps) {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [sellers, setSellers] = useState<Seller[]>(initialSellers);
@@ -50,6 +58,54 @@ export function AdminDashboard({
     const [isSellerModalOpen, setIsSellerModalOpen] = useState(false);
     const [sellerToEdit, setSellerToEdit] = useState<Seller | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Local state for appearance settings
+    const [localBannerImages, setLocalBannerImages] = useState(initialBannerImages);
+    const [localStoreName, setLocalStoreName] = useState(initialStoreName);
+    const [localThemeColor, setLocalThemeColor] = useState(initialThemeColor);
+    const [localLogoUrl, setLocalLogoUrl] = useState(initialLogoUrl);
+
+     // Reset local state if initial props change (e.g., after saving)
+    useEffect(() => {
+        setLocalBannerImages(initialBannerImages);
+        setLocalStoreName(initialStoreName);
+        setLocalThemeColor(initialThemeColor);
+        setLocalLogoUrl(initialLogoUrl);
+    }, [initialBannerImages, initialStoreName, initialThemeColor, initialLogoUrl]);
+
+
+    const hasChanges = useMemo(() => {
+        return (
+            JSON.stringify(localBannerImages) !== JSON.stringify(initialBannerImages) ||
+            localStoreName !== initialStoreName ||
+            localThemeColor !== initialThemeColor ||
+            localLogoUrl !== initialLogoUrl
+        );
+    }, [localBannerImages, localStoreName, localThemeColor, localLogoUrl, initialBannerImages, initialStoreName, initialThemeColor, initialLogoUrl]);
+
+    const handleSave = () => {
+        setIsSaving(true);
+        onSaveChanges({
+            bannerImages: localBannerImages,
+            storeName: localStoreName,
+            themeColor: localThemeColor,
+            logoUrl: localLogoUrl,
+        });
+        setTimeout(() => {
+            setIsSaving(false);
+        }, 1500); // Simulate save time for user feedback
+    };
+    
+    const handleGoBack = () => {
+        if(hasChanges) {
+            if(window.confirm('Você tem alterações não salvas. Deseja descartá-las e voltar para a loja?')) {
+                onLogout();
+            }
+        } else {
+            onLogout();
+        }
+    };
     
     const ai = useMemo(() => {
         if (!process.env.API_KEY) {
@@ -149,13 +205,13 @@ export function AdminDashboard({
     const renderTabContent = () => {
         switch (activeTab) {
             case 'overview':
-                return <ReportsDashboard products={products} sellers={sellers} themeColor={themeColor}/>;
+                return <ReportsDashboard products={products} sellers={sellers} themeColor={localThemeColor}/>;
             case 'products':
                 return (
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-800">Gerenciar Produtos</h2>
-                            <button onClick={handleAddProduct} className={`flex items-center gap-2 px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
+                            <button onClick={handleAddProduct} className={`flex items-center gap-2 px-4 py-2 bg-${localThemeColor}-600 text-white font-semibold rounded-md hover:bg-${localThemeColor}-700`}>
                                 <PlusIcon /> Novo Produto
                             </button>
                         </div>
@@ -193,7 +249,7 @@ export function AdminDashboard({
                     <div>
                          <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-800">Gerenciar Vendedores</h2>
-                            <button onClick={handleAddSeller} className={`flex items-center gap-2 px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
+                            <button onClick={handleAddSeller} className={`flex items-center gap-2 px-4 py-2 bg-${localThemeColor}-600 text-white font-semibold rounded-md hover:bg-${localThemeColor}-700`}>
                                 <PlusIcon /> Novo Vendedor
                             </button>
                         </div>
@@ -232,18 +288,20 @@ export function AdminDashboard({
                     </div>
                 );
             case 'financial':
-                return <FinancialDashboard transactions={transactions} themeColor={themeColor} />;
+                return <FinancialDashboard transactions={transactions} themeColor={localThemeColor} />;
             case 'appearance':
                 return <AppearanceDashboard
-                    bannerImages={bannerImages}
-                    onBannerImagesChange={onBannerImagesChange}
-                    storeName={storeName}
-                    onStoreNameChange={onStoreNameChange}
-                    themeColor={themeColor}
-                    onThemeColorChange={onThemeColorChange}
+                    bannerImages={localBannerImages}
+                    onBannerImagesChange={setLocalBannerImages}
+                    storeName={localStoreName}
+                    onStoreNameChange={setLocalStoreName}
+                    themeColor={localThemeColor}
+                    onThemeColorChange={setLocalThemeColor}
+                    logoUrl={localLogoUrl}
+                    onLogoUrlChange={setLocalLogoUrl}
                 />;
             case 'settings':
-                return <SettingsDashboard themeColor={themeColor} />;
+                return <SettingsDashboard themeColor={localThemeColor} />;
         }
     };
     
@@ -252,7 +310,7 @@ export function AdminDashboard({
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
                 activeTab === tab 
-                ? `bg-${themeColor}-600 text-white shadow-sm` 
+                ? `bg-${localThemeColor}-600 text-white shadow-sm` 
                 : 'text-slate-600 hover:bg-slate-200'
             }`}
         >
@@ -262,7 +320,29 @@ export function AdminDashboard({
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-8">Painel do Administrador</h1>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+                 <h1 className="text-3xl font-bold text-slate-900">Painel do Administrador</h1>
+                 <div className="flex items-center gap-3">
+                    <button 
+                        onClick={handleGoBack}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-semibold rounded-md hover:bg-slate-50 transition-colors text-sm"
+                    >
+                        <ArrowLeftIcon />
+                        Voltar para a Loja
+                    </button>
+                    <button 
+                        onClick={handleSave}
+                        disabled={!hasChanges || isSaving}
+                        className={`px-4 py-2 font-semibold rounded-md transition-colors text-sm text-white ${
+                            !hasChanges || isSaving
+                            ? 'bg-slate-400 cursor-not-allowed'
+                            : `bg-${localThemeColor}-600 hover:bg-${localThemeColor}-700`
+                        }`}
+                    >
+                       {isSaving ? 'Salvando...' : !hasChanges ? 'Salvo!' : 'Salvar Alterações'}
+                    </button>
+                 </div>
+            </div>
             
             <div className="flex space-x-2 border-b mb-6 overflow-x-auto pb-2 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
                 <TabButton tab="overview" label="Visão Geral" icon={<ChartBarIcon className="h-5 w-5"/>} />
@@ -285,7 +365,7 @@ export function AdminDashboard({
                 sellers={sellers}
                 onGenerateDescription={handleGenerateDescription}
                 isGenerating={isGenerating}
-                themeColor={themeColor}
+                themeColor={localThemeColor}
             />
 
              <SellerFormModal
@@ -293,7 +373,7 @@ export function AdminDashboard({
                 onClose={() => setIsSellerModalOpen(false)}
                 onSave={handleSaveSeller}
                 sellerToEdit={sellerToEdit}
-                themeColor={themeColor}
+                themeColor={localThemeColor}
             />
         </div>
     );
