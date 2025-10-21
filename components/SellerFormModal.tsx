@@ -15,6 +15,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
     const [nomeNegocio, setNomeNegocio] = useState('');
     const [email, setEmail] = useState('');
     const [telefone, setTelefone] = useState('');
+    const [cnpj, setCnpj] = useState('');
     const [status, setStatus] = useState<'Aprovado' | 'Pendente' | 'Rejeitado'>('Pendente');
     const [subscriptionStatus, setSubscriptionStatus] = useState<'Ativa' | 'Inativa'>('Inativa');
 
@@ -24,6 +25,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
             setNomeNegocio(sellerToEdit.nomeNegocio);
             setEmail(sellerToEdit.email);
             setTelefone(sellerToEdit.telefone);
+            setCnpj(sellerToEdit.cnpj);
             setStatus(sellerToEdit.status);
             setSubscriptionStatus(sellerToEdit.subscriptionStatus);
         } else {
@@ -32,6 +34,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
             setNomeNegocio('');
             setEmail('');
             setTelefone('');
+            setCnpj('');
             setStatus('Pendente');
             setSubscriptionStatus('Inativa');
         }
@@ -45,6 +48,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
             nomeNegocio,
             email,
             telefone,
+            cnpj,
             status,
             subscriptionStatus
         });
@@ -72,6 +76,10 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit }: Selle
                         <div>
                             <label htmlFor="nomeNegocio" className="block text-sm font-medium text-slate-700">Nome do Negócio</label>
                             <input type="text" id="nomeNegocio" value={nomeNegocio} onChange={e => setNomeNegocio(e.target.value)} required className="mt-1 block w-full input-style" />
+                        </div>
+                         <div>
+                            <label htmlFor="cnpj" className="block text-sm font-medium text-slate-700">CNPJ</label>
+                            <input type="text" id="cnpj" value={cnpj} onChange={e => setCnpj(e.target.value)} required placeholder="12.345.678/0001-99" className="mt-1 block w-full input-style" />
                         </div>
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-slate-700">E-mail</label>

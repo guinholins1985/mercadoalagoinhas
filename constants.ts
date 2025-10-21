@@ -1,4 +1,4 @@
-import type { Product, User, Seller, Review } from './types';
+import type { Product, User, Seller, Review, Transaction } from './types';
 
 // Mock Users
 export const USERS: User[] = [
@@ -14,6 +14,7 @@ export const SELLERS: Seller[] = [
     nomeNegocio: 'Sítio do João',
     email: 'joao.sitio@email.com',
     telefone: '75999998888',
+    cnpj: '12.345.678/0001-99',
     status: 'Aprovado',
     dataCadastro: '2023-01-15',
     subscriptionStatus: 'Ativa',
@@ -25,6 +26,7 @@ export const SELLERS: Seller[] = [
     nomeNegocio: 'Delícias da Maria',
     email: 'maria.delicias@email.com',
     telefone: '75988887777',
+    cnpj: '98.765.432/0001-11',
     status: 'Aprovado',
     dataCadastro: '2023-02-20',
     subscriptionStatus: 'Ativa',
@@ -36,6 +38,7 @@ export const SELLERS: Seller[] = [
     nomeNegocio: 'Artesanato Mãos de Ouro',
     email: 'carlos.artes@email.com',
     telefone: '75977776666',
+    cnpj: '55.444.333/0001-22',
     status: 'Pendente',
     dataCadastro: '2023-03-10',
     subscriptionStatus: 'Inativa',
@@ -55,6 +58,7 @@ export const PRODUCTS: Product[] = [
     sellerId: 'seller-1',
     sellerName: 'Sítio do João',
     rating: 4.8,
+    stock: 15,
   },
   {
     id: 'prod-2',
@@ -66,6 +70,7 @@ export const PRODUCTS: Product[] = [
     sellerId: 'seller-2',
     sellerName: 'Delícias da Maria',
     rating: 4.9,
+    stock: 10,
   },
   {
     id: 'prod-3',
@@ -77,6 +82,7 @@ export const PRODUCTS: Product[] = [
     sellerId: 'seller-1',
     sellerName: 'Sítio do João',
     rating: 4.7,
+    stock: 50,
   },
    {
     id: 'prod-4',
@@ -88,6 +94,7 @@ export const PRODUCTS: Product[] = [
     sellerId: 'seller-2',
     sellerName: 'Delícias da Maria',
     rating: 4.6,
+    stock: 20,
   },
   {
     id: 'prod-5',
@@ -99,6 +106,7 @@ export const PRODUCTS: Product[] = [
     sellerId: 'seller-3',
     sellerName: 'Artesanato Mãos de Ouro',
     rating: 5.0,
+    stock: 5,
   }
 ];
 
@@ -135,5 +143,75 @@ export const SELLER_REVIEWS: Review[] = [
         rating: 5,
         date: '2023-07-28',
         comment: 'Tudo que eu compro da Maria é delicioso. O pão de queijo é um espetáculo.'
+    }
+];
+
+
+// Mock Transactions
+export const TRANSACTIONS: Transaction[] = [
+    {
+        id: 'txn-1',
+        date: '2023-08-15',
+        sellerId: 'seller-1',
+        sellerName: 'Sítio do João',
+        productId: 'prod-1',
+        productName: 'Cesta de Orgânicos',
+        amount: 85.00,
+        fee: 4.25,
+        netAmount: 80.75,
+        status: 'Aprovado',
+        paymentMethod: 'Cartão de Crédito',
+    },
+    {
+        id: 'txn-2',
+        date: '2023-08-15',
+        sellerId: 'seller-2',
+        sellerName: 'Delícias da Maria',
+        productId: 'prod-2',
+        productName: 'Bolo de Chocolate Caseiro',
+        amount: 45.00,
+        fee: 2.25,
+        netAmount: 42.75,
+        status: 'Aprovado',
+        paymentMethod: 'Pix',
+    },
+    {
+        id: 'txn-3',
+        date: '2023-08-14',
+        sellerId: 'seller-1',
+        sellerName: 'Sítio do João',
+        productId: 'prod-3',
+        productName: 'Abacaxi Pérola (Unidade)',
+        amount: 8.00,
+        fee: 0.40,
+        netAmount: 7.60,
+        status: 'Aprovado',
+        paymentMethod: 'Cartão de Crédito',
+    },
+    {
+        id: 'txn-4',
+        date: '2023-08-13',
+        sellerId: 'seller-2',
+        sellerName: 'Delícias da Maria',
+        productId: 'prod-4',
+        productName: 'Pão de Queijo Congelado',
+        amount: 25.00,
+        fee: 1.25,
+        netAmount: 23.75,
+        status: 'Rejeitado',
+        paymentMethod: 'Boleto',
+    },
+     {
+        id: 'txn-5',
+        date: '2023-08-12',
+        sellerId: 'seller-1',
+        sellerName: 'Sítio do João',
+        productId: 'prod-1',
+        productName: 'Cesta de Orgânicos',
+        amount: 85.00,
+        fee: 4.25,
+        netAmount: 80.75,
+        status: 'Pendente',
+        paymentMethod: 'Boleto',
     }
 ];

@@ -16,6 +16,7 @@ export type Product = {
   sellerId: string;
   sellerName: string;
   rating: number;
+  stock: number;
 };
 
 export type Seller = {
@@ -24,6 +25,7 @@ export type Seller = {
   nomeNegocio: string;
   email: string;
   telefone: string;
+  cnpj: string;
   status: 'Aprovado' | 'Pendente' | 'Rejeitado';
   dataCadastro: string;
   subscriptionStatus: 'Ativa' | 'Inativa';
@@ -37,4 +39,18 @@ export type Review = {
   rating: number;
   date: string;
   comment: string;
+};
+
+export type Transaction = {
+    id: string;
+    date: string;
+    sellerId: string;
+    sellerName: string;
+    productId: string;
+    productName: string;
+    amount: number;
+    fee: number;
+    netAmount: number;
+    status: 'Aprovado' | 'Pendente' | 'Rejeitado';
+    paymentMethod: 'Cartão de Crédito' | 'Pix' | 'Boleto';
 };

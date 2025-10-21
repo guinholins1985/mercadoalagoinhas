@@ -28,7 +28,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }).format(product.price);
 
     const whatsappLink = seller 
-        ? `https://api.whatsapp.com/send?phone=${seller.telefone}&text=${encodeURIComponent(`Olá, ${seller.nomeNegocio}! Tenho interesse no produto "${product.name}".`)}`
+        ? `https://wa.me/55${seller.telefone}?text=${encodeURIComponent(`Olá, ${seller.nomeNegocio}! Tenho interesse no produto "${product.name}".`)}`
         : '#';
 
     return (

@@ -21,6 +21,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
     const [category, setCategory] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [sellerId, setSellerId] = useState('');
+    const [stock, setStock] = useState(0);
 
     useEffect(() => {
         if (productToEdit) {
@@ -30,6 +31,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
             setCategory(productToEdit.category);
             setImageUrl(productToEdit.imageUrl);
             setSellerId(productToEdit.sellerId);
+            setStock(productToEdit.stock);
         } else {
             // Reset form
             setName('');
@@ -38,6 +40,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
             setCategory('');
             setImageUrl('');
             setSellerId('');
+            setStock(0);
         }
     }, [productToEdit, isOpen]);
 
@@ -67,6 +70,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
             imageUrl,
             sellerId,
             sellerName: seller.nomeNegocio,
+            stock,
         });
         onClose();
     };
@@ -116,14 +120,18 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                             </select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
+                             <div>
                                 <label htmlFor="price" className="block text-sm font-medium text-slate-700">Preço (R$)</label>
                                 <input type="number" id="price" value={price} onChange={e => setPrice(Number(e.target.value))} required min="0" step="0.01" className="mt-1 block w-full input-style" />
                             </div>
-                            <div>
-                                <label htmlFor="category" className="block text-sm font-medium text-slate-700">Categoria</label>
-                                <input type="text" id="category" value={category} onChange={e => setCategory(e.target.value)} required className="mt-1 block w-full input-style" />
+                             <div>
+                                <label htmlFor="stock" className="block text-sm font-medium text-slate-700">Estoque</label>
+                                <input type="number" id="stock" value={stock} onChange={e => setStock(Number(e.target.value))} required min="0" className="mt-1 block w-full input-style" />
                             </div>
+                        </div>
+                        <div>
+                            <label htmlFor="category" className="block text-sm font-medium text-slate-700">Categoria</label>
+                            <input type="text" id="category" value={category} onChange={e => setCategory(e.target.value)} required className="mt-1 block w-full input-style" />
                         </div>
                         <div>
                             <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-700">URL da Imagem</label>
