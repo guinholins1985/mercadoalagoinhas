@@ -213,9 +213,9 @@ export function AdminDashboard({
                                             <td className="px-6 py-4">{p.sellerName}</td>
                                             <td className="px-6 py-4">R$ {p.price.toFixed(2)}</td>
                                             <td className="px-6 py-4">{p.stock}</td>
-                                            <td className="px-6 py-4 flex gap-3">
-                                                <button onClick={() => handleEditProduct(p)} title="Editar" className="p-1 rounded-full text-blue-600 hover:text-white hover:bg-blue-500 transition-colors"><EditIcon /></button>
-                                                <button onClick={() => handleDeleteProduct(p.id)} title="Excluir" className="p-1 rounded-full text-red-600 hover:text-white hover:bg-red-500 transition-colors"><DeleteIcon /></button>
+                                            <td className="px-6 py-4 flex items-center gap-4">
+                                                <button onClick={() => handleEditProduct(p)} title="Editar" className="p-1.5 rounded-full text-slate-500 hover:text-white hover:bg-blue-600 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"><EditIcon /></button>
+                                                <button onClick={() => handleDeleteProduct(p.id)} title="Excluir" className="p-1.5 rounded-full text-slate-500 hover:text-white hover:bg-red-600 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"><DeleteIcon /></button>
                                             </td>
                                         </tr>
                                     ))}
@@ -255,10 +255,10 @@ export function AdminDashboard({
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">{new Date(s.dataCadastro).toLocaleDateString('pt-BR')}</td>
-                                            <td className="px-6 py-4 flex gap-3">
-                                                {s.status === 'Pendente' && <button onClick={() => handleApproveSeller(s.id)} title="Aprovar" className="p-1 rounded-full text-green-600 hover:text-white hover:bg-green-500 transition-colors"><CheckIcon /></button>}
-                                                <button onClick={() => handleEditSeller(s)} title="Editar" className="p-1 rounded-full text-blue-600 hover:text-white hover:bg-blue-500 transition-colors"><EditIcon /></button>
-                                                <button onClick={() => handleDeleteSeller(s.id)} title="Excluir" className="p-1 rounded-full text-red-600 hover:text-white hover:bg-red-500 transition-colors"><DeleteIcon /></button>
+                                            <td className="px-6 py-4 flex items-center gap-4">
+                                                {s.status === 'Pendente' && <button onClick={() => handleApproveSeller(s.id)} title="Aprovar" className="p-1.5 rounded-full text-slate-500 hover:text-white hover:bg-green-600 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"><CheckIcon /></button>}
+                                                <button onClick={() => handleEditSeller(s)} title="Editar" className="p-1.5 rounded-full text-slate-500 hover:text-white hover:bg-blue-600 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"><EditIcon /></button>
+                                                <button onClick={() => handleDeleteSeller(s.id)} title="Excluir" className="p-1.5 rounded-full text-slate-500 hover:text-white hover:bg-red-600 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"><DeleteIcon /></button>
                                             </td>
                                         </tr>
                                     ))}
