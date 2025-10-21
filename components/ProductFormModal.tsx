@@ -18,6 +18,7 @@ const emptyProduct: Omit<Product, 'id'> = {
     imagem: 'https://picsum.photos/seed/newproduct/400/300', // Default image
     vendedor: '',
     telefone: '',
+    estoque: 0,
     destaque: false,
     tags: [],
 };
@@ -30,7 +31,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, product }: Product
     
     useEffect(() => {
         // When the product prop changes, update the form data.
-        const initialData = product ? { ...product, tags: product.tags || [] } : { ...emptyProduct, tags: [] };
+        const initialData = product ? { ...product, estoque: product.estoque ?? 0, tags: product.tags || [] } : { ...emptyProduct, tags: [] };
         setFormData(initialData);
         setSuggestedTags([]); // Clear suggestions when modal opens for a new product
         setIsGenerating(false);
@@ -44,6 +45,8 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, product }: Product
         if (type === 'checkbox') {
              const { checked } = e.target as HTMLInputElement;
              setFormData(prev => ({ ...prev, [name]: checked }));
+        } else if (type === 'number') {
+             setFormData(prev => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -104,9 +107,12 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, product }: Product
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simple validation
         if (!formData.nome || !formData.preco || !formData.categoria) {
             alert('Por favor, preencha os campos obrigatórios: Nome, Preço e Categoria.');
+            return;
+        }
+        if (formData.estoque < 0) {
+            alert('O estoque não pode ser um número negativo.');
             return;
         }
         onSubmit(formData);
@@ -126,7 +132,6 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, product }: Product
                 <div className="p-6">
                     <h2 className="text-2xl font-bold mb-4">{product ? 'Editar Produto' : 'Adicionar Novo Produto'}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Fields for nome, descricao, preco, etc. */}
                         <div>
                             <label htmlFor="nome" className="block text-sm font-medium text-slate-700">Nome do Produto</label>
                             <input type="text" name="nome" id="nome" value={formData.nome} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
@@ -135,9 +140,15 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, product }: Product
                             <label htmlFor="descricao" className="block text-sm font-medium text-slate-700">Descrição</label>
                             <textarea name="descricao" id="descricao" value={formData.descricao} onChange={handleChange} rows={3} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"></textarea>
                         </div>
-                         <div>
-                            <label htmlFor="preco" className="block text-sm font-medium text-slate-700">Preço (ex: R$ 40,00)</label>
-                            <input type="text" name="preco" id="preco" value={formData.preco} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             <div>
+                                <label htmlFor="preco" className="block text-sm font-medium text-slate-700">Preço (ex: R$ 40,00)</label>
+                                <input type="text" name="preco" id="preco" value={formData.preco} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
+                            </div>
+                             <div>
+                                <label htmlFor="estoque" className="block text-sm font-medium text-slate-700">Estoque</label>
+                                <input type="number" name="estoque" id="estoque" value={formData.estoque} onChange={handleChange} min="0" className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
+                            </div>
                         </div>
                         <div>
                             <label htmlFor="categoria" className="block text-sm font-medium text-slate-700">Categoria</label>
@@ -192,18 +203,22 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, product }: Product
                             )}
                         </div>
 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="vendedor" className="block text-sm font-medium text-slate-700">Vendedor</label>
+                                <input type="text" name="vendedor" id="vendedor" value={formData.vendedor} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
+                            </div>
+                            <div>
+                                <label htmlFor="telefone" className="block text-sm font-medium text-slate-700">Telefone (WhatsApp)</label>
+                                <input type="text" name="telefone" id="telefone" value={formData.telefone} onChange={handleChange} placeholder="71999999999" className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
+                            </div>
+                        </div>
+
                         <div>
                             <label htmlFor="imagem" className="block text-sm font-medium text-slate-700">URL da Imagem</label>
                             <input type="url" name="imagem" id="imagem" value={formData.imagem} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
                         </div>
-                         <div>
-                            <label htmlFor="vendedor" className="block text-sm font-medium text-slate-700">Vendedor</label>
-                            <input type="text" name="vendedor" id="vendedor" value={formData.vendedor} onChange={handleChange} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
-                        </div>
-                         <div>
-                            <label htmlFor="telefone" className="block text-sm font-medium text-slate-700">Telefone (WhatsApp)</label>
-                            <input type="text" name="telefone" id="telefone" value={formData.telefone} onChange={handleChange} placeholder="71999999999" className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" />
-                        </div>
+                        
                         <div className="flex items-center">
                             <input type="checkbox" name="destaque" id="destaque" checked={formData.destaque ?? false} onChange={handleChange} className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
                             <label htmlFor="destaque" className="ml-2 block text-sm text-slate-900">Marcar como Destaque</label>

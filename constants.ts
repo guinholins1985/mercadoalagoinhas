@@ -1,72 +1,141 @@
-import type { Product } from './types';
+import type { Product, User, Seller } from './types';
 
-export const produtos: Product[] = [
-    {
-        id: 1,
-        nome: "Cesta de Palha Artesanal",
-        descricao: "Cesta trançada à mão, ideal para decoração ou piqueniques.",
-        preco: "R$ 40,00",
-        categoria: "Artesanato",
-        imagem: "https://picsum.photos/seed/cesta/400/300",
-        vendedor: "Maria Artesã",
-        telefone: "71999999999",
-        tags: ["decoração", "piquenique", "rústico", "natural"]
+export const USERS: User[] = [
+    { id: '1', name: 'Admin User', type: 'admin' },
+    { id: '2', name: 'João Silva', type: 'customer' },
+];
+
+export const PLAN_DETAILS = {
+    'Básico': {
+        price: 'R$20/mês',
+        productLimit: 10,
     },
-    {
-        id: 2,
-        nome: "Abacaxi Orgânico",
-        descricao: "Abacaxi Pérola cultivado sem agrotóxicos, doce e suculento.",
-        preco: "R$ 5,00",
-        categoria: "Alimentos",
-        imagem: "https://picsum.photos/seed/abacaxi/400/300",
-        vendedor: "Sítio do João",
-        telefone: "71988888888",
-        tags: ["fruta", "orgânico", "saudável"]
-    },
-    {
-        id: 3,
-        nome: "Bolo de Chocolate Caseiro",
-        descricao: "Bolo fofinho feito com chocolate belga e ingredientes frescos.",
-        preco: "R$ 30,00",
-        categoria: "Alimentos",
-        imagem: "https://picsum.photos/seed/bolo/400/300",
-        vendedor: "Doces da Ana",
-        telefone: "71977777777",
-        destaque: true,
-        tags: ["doce", "festa", "sobremesa", "chocolate"]
-    },
-    {
-        id: 4,
-        nome: "Sabonete Artesanal de Ervas",
-        descricao: "Sabonete de lavanda feito com ervas naturais e óleos essenciais.",
-        preco: "R$ 8,00",
-        categoria: "Cosméticos",
-        imagem: "https://picsum.photos/seed/sabonete/400/300",
-        vendedor: "Aromas do Carlos",
-        telefone: "71966666666",
-        tags: ["vegano", "natural", "banho", "lavanda"]
-    },
-    {
-        id: 5,
-        nome: "Pão de Fermentação Natural",
-        descricao: "Pão rústico com casca crocante e miolo macio. Longa fermentação.",
-        preco: "R$ 20,00",
-        categoria: "Alimentos",
-        imagem: "https://picsum.photos/seed/pao/400/300",
-        vendedor: "Padoca do Bairro",
-        telefone: "71955555555",
-        tags: ["padaria", "artesanal", "café da manhã"]
-    },
-    {
-        id: 6,
-        nome: "Vaso de Cerâmica Pintado",
-        descricao: "Vaso decorativo de cerâmica, pintado à mão com motivos florais.",
-        preco: "R$ 55,00",
-        categoria: "Artesanato",
-        imagem: "https://picsum.photos/seed/vaso/400/300",
-        vendedor: "Maria Artesã",
-        telefone: "71999999999",
-        destaque: true,
-        tags: ["decoração", "jardim", "feito à mão", "cerâmica"]
+    'Premium': {
+        price: 'R$50/mês',
+        productLimit: Infinity,
     }
+}
+
+export const SELLERS: Seller[] = [
+    {
+        id: 's1',
+        nomeCompleto: 'Fazenda Orgânica Sol Nascente',
+        cpfCnpj: '11.222.333/0001-44',
+        telefone: '71988887777',
+        email: 'contato@solnascente.com',
+        enderecoCompleto: 'Rua das Flores, 123, Alagoinhas, BA',
+        categoriaDeProduto: 'Orgânicos',
+        status: 'Ativo',
+        plan: 'Premium',
+        subscriptionStatus: 'Ativa',
+        vencimentoAssinatura: '2024-12-25',
+    },
+    {
+        id: 's2',
+        nomeCompleto: 'Dona Maria Bolos Caseiros',
+        cpfCnpj: '123.456.789-00',
+        telefone: '71999998888',
+        email: 'donamaria@bolos.com',
+        enderecoCompleto: 'Avenida Principal, 456, Alagoinhas, BA',
+        categoriaDeProduto: 'Doces e Bolos',
+        status: 'Ativo',
+        plan: 'Básico',
+        subscriptionStatus: 'Atrasada',
+        vencimentoAssinatura: '2024-10-05',
+    },
+    {
+        id: 's3',
+        nomeCompleto: 'Pão da Terra',
+        cpfCnpj: '987.654.321-11',
+        telefone: '71977776666',
+        email: 'paodaterra@email.com',
+        enderecoCompleto: 'Travessa dos Pães, 789, Alagoinhas, BA',
+        categoriaDeProduto: 'Pães',
+        status: 'Inativo',
+        plan: 'Básico',
+        subscriptionStatus: 'Cancelada',
+        vencimentoAssinatura: '2024-09-15',
+    },
+    {
+        id: 's4',
+        nomeCompleto: 'Queijos & Cia',
+        cpfCnpj: '44.555.666/0001-77',
+        telefone: '71944443333',
+        email: 'queijos@cia.com',
+        enderecoCompleto: 'Estrada do Queijo, 101, Alagoinhas, BA',
+        categoriaDeProduto: 'Laticínios',
+        status: 'Pendente',
+        plan: 'Básico',
+        subscriptionStatus: 'Ativa',
+        vencimentoAssinatura: '2024-11-30',
+    }
+];
+
+
+export const PRODUCTS: Product[] = [
+    {
+        id: 'p1',
+        nome: 'Cesta de Orgânicos Pequena',
+        descricao: 'Uma seleção de frutas, legumes e verduras frescas e orgânicas da estação. Perfeita para uma ou duas pessoas.',
+        preco: 'R$ 65,00',
+        categoria: 'Cestas',
+        imagem: 'https://picsum.photos/seed/p1/400/300',
+        vendedor: 'Fazenda Orgânica Sol Nascente',
+        telefone: '71988887777',
+        estoque: 15,
+        destaque: true,
+        tags: ['orgânico', 'fresquinho', 'saudável'],
+    },
+    {
+        id: 'p2',
+        nome: 'Bolo de Milho Caseiro',
+        descricao: 'Delicioso bolo de milho cremoso, feito com milho verde fresco e ingredientes selecionados. Sem conservantes.',
+        preco: 'R$ 25,00',
+        categoria: 'Doces e Bolos',
+        imagem: 'https://picsum.photos/seed/p2/400/300',
+        vendedor: 'Dona Maria Bolos Caseiros',
+        telefone: '71999998888',
+        estoque: 8,
+        destaque: false,
+        tags: ['caseiro', 'milho', 'sem-conservantes'],
+    },
+    {
+        id: 'p3',
+        nome: 'Pão de Fermentação Natural',
+        descricao: 'Pão artesanal de longa fermentação, com casca crocante e miolo macio. Feito com farinha orgânica.',
+        preco: 'R$ 22,00',
+        categoria: 'Pães',
+        imagem: 'https://picsum.photos/seed/p3/400/300',
+        vendedor: 'Pão da Terra',
+        telefone: '71977776666',
+        estoque: 20,
+        destaque: false,
+        tags: ['artesanal', 'fermentação-natural'],
+    },
+    {
+        id: 'p4',
+        nome: 'Geleia de Abacaxi com Pimenta',
+        descricao: 'Geleia agridoce e picante, perfeita para acompanhar queijos, torradas e carnes. Produção artesanal.',
+        preco: 'R$ 18,00',
+        categoria: 'Geleias e Conservas',
+        imagem: 'https://picsum.photos/seed/p4/400/300',
+        vendedor: 'Sabores da Roça',
+        telefone: '71966665555',
+        estoque: 0,
+        destaque: false,
+        tags: ['geleia', 'agridoce', 'artesanal'],
+    },
+     {
+        id: 'p5',
+        nome: 'Queijo Minas Frescal',
+        descricao: 'Queijo fresco, leve e de sabor suave. Ideal para o café da manhã ou para acompanhar doces e salgados.',
+        preco: 'R$ 30,00',
+        categoria: 'Laticínios',
+        imagem: 'https://picsum.photos/seed/p5/400/300',
+        vendedor: 'Laticínios Boa Vista',
+        telefone: '71955554444',
+        estoque: 3,
+        destaque: true,
+        tags: ['queijo', 'frescal', 'minas'],
+    },
 ];

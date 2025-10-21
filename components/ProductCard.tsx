@@ -7,14 +7,14 @@ interface ProductCardProps {
     product: Product;
 }
 
-// FIX: Explicitly type ProductCard as a React.FC to help TypeScript correctly interpret it as a React component.
-// This resolves an error where the special 'key' prop was being incorrectly type-checked against the component's props.
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const whatsappMessage = `Olá, vi o produto "${product.nome}" no Mercado Alagoinhas e tenho interesse!`;
     const whatsappLink = `https://wa.me/55${product.telefone}?text=${encodeURIComponent(whatsappMessage)}`;
+    const isOutOfStock = product.estoque === 0;
+    const isLowStock = product.estoque > 0 && product.estoque <= 5;
     
     return (
-        <div className={`bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl ${product.destaque ? 'ring-2 ring-yellow-400 ring-offset-2' : ''}`}>
+        <div className={`bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl ${product.destaque ? 'ring-2 ring-yellow-400 ring-offset-2' : ''} ${isOutOfStock ? 'opacity-60' : ''}`}>
             <div className="relative">
                 <img 
                     src={product.imagem} 
@@ -25,6 +25,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
                         <StarIcon />
                         <span>Destaque</span>
+                    </div>
+                )}
+                 {isOutOfStock && (
+                    <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+                        <span className="text-white text-lg font-bold bg-red-600 px-4 py-2 rounded-md">ESGOTADO</span>
                     </div>
                 )}
             </div>
@@ -45,6 +50,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                 <div className="mt-4">
                     <p className="text-xl font-extrabold text-slate-900">{product.preco}</p>
+                     {isLowStock && !isOutOfStock && (
+                        <p className="text-sm font-bold text-yellow-600 mt-1">Restam apenas {product.estoque} unidades!</p>
+                    )}
                     <p className="text-sm text-slate-500 mt-2">
                         Vendido por: <span className="font-semibold">{product.vendedor}</span>
                     </p>
@@ -55,10 +63,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+                    className={`w-full flex items-center justify-center gap-2 font-bold py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                        isOutOfStock
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-green-500 text-white hover:bg-green-600 focus:ring-green-400'
+                    }`}
+                    onClick={(e) => isOutOfStock && e.preventDefault()}
+                    aria-disabled={isOutOfStock}
                 >
                     <WhatsAppIcon />
-                    Contatar Vendedor
+                    {isOutOfStock ? 'Produto Esgotado' : 'Contatar Vendedor'}
                 </a>
             </div>
         </div>

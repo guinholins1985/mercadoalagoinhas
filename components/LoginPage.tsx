@@ -1,215 +1,168 @@
 import React, { useState } from 'react';
-import type { User } from '../types';
+import type { User, Seller } from '../types';
+import { USERS } from '../constants';
 
 interface LoginPageProps {
     onLogin: (user: User) => void;
+    onRegisterSeller: (sellerData: Omit<Seller, 'id'>) => void;
 }
 
-type ActiveTab = 'user' | 'admin';
-type View = 'login' | 'register';
+type ActiveTab = 'login' | 'register';
 
-export function LoginPage({ onLogin }: LoginPageProps) {
-    const [activeTab, setActiveTab] = useState<ActiveTab>('user');
-    const [view, setView] = useState<View>('login');
+export function LoginPage({ onLogin, onRegisterSeller }: LoginPageProps) {
+    const [activeTab, setActiveTab] = useState<ActiveTab>('login');
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Login State
+    const [selectedUserId, setSelectedUserId] = useState<string>(USERS[0].id);
     
-    // Admin state
-    const [adminUsername, setAdminUsername] = useState('');
-    const [adminPassword, setAdminPassword] = useState('');
-    const [adminError, setAdminError] = useState('');
-
-    // User login state
-    const [userUsername, setUserUsername] = useState('');
-    const [userPassword, setUserPassword] = useState('');
-    const [userError, setUserError] = useState('');
-    
-    // User registration state
-    const [regFullName, setRegFullName] = useState('');
-    const [regUsername, setRegUsername] = useState('');
-    const [regEmail, setRegEmail] = useState('');
-    const [regPassword, setRegPassword] = useState('');
-    const [regError, setRegError] = useState('');
+    // Register State
+    const [sellerName, setSellerName] = useState('');
+    const [sellerEmail, setSellerEmail] = useState('');
+    const [sellerPhone, setSellerPhone] = useState('');
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
 
-    const handleAdminLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (adminUsername === 'ad' && adminPassword === 'a12') {
-            onLogin({ type: 'admin', name: 'Admin' });
-        } else {
-            setAdminError('Usuário ou senha inválidos.');
-        }
+    const handleLoginSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setTimeout(() => {
+            const user = USERS.find(u => u.id === selectedUserId);
+            if (user) {
+                onLogin(user);
+            }
+            setIsLoading(false);
+        }, 500);
     };
 
-    const handleUserLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (userUsername.trim() && userPassword.trim()) {
-            onLogin({ type: 'user', name: userUsername });
-        } else {
-            setUserError('Por favor, preencha todos os campos.');
+    const handleRegisterSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        if(!sellerName || !sellerEmail || !sellerPhone) {
+            alert('Por favor, preencha todos os campos.');
+            return;
         }
+        setIsLoading(true);
+        
+        const today = new Date();
+        today.setDate(today.getDate() + 30); // Set expiration 30 days from now
+        const expirationDate = today.toISOString().split('T')[0];
+
+        const newSellerData: Omit<Seller, 'id'> = {
+            nomeCompleto: sellerName,
+            email: sellerEmail,
+            telefone: sellerPhone,
+            cpfCnpj: '',
+            enderecoCompleto: '',
+            categoriaDeProduto: '',
+            status: 'Pendente',
+            plan: 'Básico',
+            subscriptionStatus: 'Ativa',
+            vencimentoAssinatura: expirationDate,
+        };
+        
+        setTimeout(() => {
+            onRegisterSeller(newSellerData);
+            setIsLoading(false);
+            setShowSuccessMessage(true);
+            setSellerName('');
+            setSellerEmail('');
+            setSellerPhone('');
+        }, 1000);
     };
 
-    const handleUserRegister = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (regFullName.trim() && regUsername.trim() && regEmail.trim() && regPassword.trim()) {
-            // In a real app, you'd handle registration logic here.
-            // For now, we'll just log the user in directly.
-            onLogin({ type: 'user', name: regUsername });
-        } else {
-            setRegError('Por favor, preencha todos os campos.');
-        }
-    }
-
-    const renderLoginForm = () => (
-        <>
-            <div className="mb-6">
-                <div className="flex border-b border-gray-200">
-                    <button
-                        onClick={() => setActiveTab('user')}
-                        className={`w-1/2 py-4 px-1 text-center text-sm font-medium border-b-2 transition-colors ${activeTab === 'user' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                    >
-                        Comprador
-                    </button>
-                     <button
-                        onClick={() => setActiveTab('admin')}
-                        className={`w-1/2 py-4 px-1 text-center text-sm font-medium border-b-2 transition-colors ${activeTab === 'admin' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                    >
-                        Administrador
-                    </button>
-                </div>
-            </div>
-            {activeTab === 'user' ? renderUserLoginForm() : renderAdminLoginForm()}
-            <div className="mt-6 text-center">
-                 <button onClick={() => setView('register')} className="text-sm font-medium text-green-600 hover:text-green-500">
-                     Não tem uma conta? Cadastre-se
-                 </button>
-            </div>
-        </>
-    );
-
-    const renderUserLoginForm = () => (
-        <form onSubmit={handleUserLogin} className="space-y-6" noValidate>
-            <div>
-                <label htmlFor="user-username" className="block text-sm font-medium text-slate-700">Usuário</label>
-                <input
-                    id="user-username"
-                    type="text"
-                    value={userUsername}
-                    onChange={(e) => { setUserUsername(e.target.value); setUserError(''); }}
-                    className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                    placeholder="ex: joao.silva"
-                    required
-                />
-            </div>
-            <div>
-                <div className="flex items-center justify-between">
-                    <label htmlFor="user-password"  className="block text-sm font-medium text-slate-700">Senha</label>
-                    <div className="text-sm">
-                        <a href="#" className="font-medium text-green-600 hover:text-green-500" onClick={(e) => { e.preventDefault(); alert('Funcionalidade de recuperação de senha a ser implementada.'); }}>
-                            Esqueceu a senha?
-                        </a>
-                    </div>
-                </div>
-                <input
-                    id="user-password"
-                    type="password"
-                    value={userPassword}
-                    onChange={(e) => { setUserPassword(e.target.value); setUserError(''); }}
-                    className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                    placeholder="********"
-                    required
-                />
-            </div>
-            {userError && <p className="text-sm text-red-600">{userError}</p>}
-            <div>
-                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    Entrar
-                </button>
-            </div>
-        </form>
-    );
-
-    const renderAdminLoginForm = () => (
-         <form onSubmit={handleAdminLogin} className="space-y-6">
-            <div>
-                <label htmlFor="admin-username" className="block text-sm font-medium text-slate-700">Usuário Administrador</label>
-                <input
-                    id="admin-username"
-                    type="text"
-                    value={adminUsername}
-                    onChange={(e) => { setAdminUsername(e.target.value); setAdminError(''); }}
-                    className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="usuário de admin"
-                />
-            </div>
-            <div>
-                <label htmlFor="admin-password"  className="block text-sm font-medium text-slate-700">Senha</label>
-                <input
-                    id="admin-password"
-                    type="password"
-                    value={adminPassword}
-                    onChange={(e) => { setAdminPassword(e.target.value); setAdminError(''); }}
-                    className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="********"
-                />
-            </div>
-            {adminError && <p className="text-sm text-red-600">{adminError}</p>}
-            <div>
-                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Entrar como Administrador
-                </button>
-            </div>
-        </form>
-    );
-
-    const renderRegisterForm = () => (
-        <>
-            <h3 className="text-xl font-bold text-center text-slate-800 mb-6">Crie sua conta de Comprador</h3>
-            <form onSubmit={handleUserRegister} className="space-y-4">
-                <div>
-                    <label htmlFor="reg-fullname" className="block text-sm font-medium text-slate-700">Nome Completo</label>
-                    <input id="reg-fullname" type="text" value={regFullName} onChange={e => {setRegFullName(e.target.value); setRegError('');}} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
-                </div>
-                 <div>
-                    <label htmlFor="reg-username" className="block text-sm font-medium text-slate-700">Usuário</label>
-                    <input id="reg-username" type="text" value={regUsername} onChange={e => {setRegUsername(e.target.value); setRegError('');}} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
-                </div>
-                <div>
-                    <label htmlFor="reg-email" className="block text-sm font-medium text-slate-700">E-mail</label>
-                    <input id="reg-email" type="email" value={regEmail} onChange={e => {setRegEmail(e.target.value); setRegError('');}} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
-                </div>
-                <div>
-                    <label htmlFor="reg-password"  className="block text-sm font-medium text-slate-700">Senha</label>
-                    <input id="reg-password" type="password" value={regPassword} onChange={e => {setRegPassword(e.target.value); setRegError('');}} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
-                </div>
-                {regError && <p className="text-sm text-red-600">{regError}</p>}
-                <div>
-                    <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        Cadastrar
-                    </button>
-                </div>
-            </form>
-            <div className="mt-6 text-center">
-                 <button onClick={() => setView('login')} className="text-sm font-medium text-green-600 hover:text-green-500">
-                     Já tem uma conta? Entre
-                 </button>
-            </div>
-        </>
+    const TabButton: React.FC<{tabId: ActiveTab, currentTab: ActiveTab, children: React.ReactNode}> = ({ tabId, currentTab, children }) => (
+         <button
+            onClick={() => setActiveTab(tabId)}
+            className={`w-1/2 py-3 font-semibold text-center focus:outline-none transition-colors ${
+                currentTab === tabId 
+                ? 'text-green-600 border-b-2 border-green-600' 
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+        >
+            {children}
+        </button>
     );
 
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <h1 className="text-center text-4xl font-extrabold text-green-600 drop-shadow-sm">
-                    🛒 Mercado Alagoinhas
-                </h1>
-                <h2 className="mt-6 text-center text-2xl font-bold text-slate-900">
-                    {view === 'login' ? 'Acesse sua conta' : 'Crie sua conta'}
-                </h2>
-            </div>
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
-                    {view === 'login' ? renderLoginForm() : renderRegisterForm()}
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="max-w-md w-full bg-white shadow-md rounded-lg p-8">
+                <div className="text-center mb-6">
+                    <h1 className="text-3xl font-extrabold text-green-600">
+                        🛒 Mercado Alagoinhas
+                    </h1>
                 </div>
+
+                <div className="flex border-b mb-6">
+                    <TabButton tabId="login" currentTab={activeTab}>Entrar</TabButton>
+                    <TabButton tabId="register" currentTab={activeTab}>Cadastrar Vendedor</TabButton>
+                </div>
+                
+                {activeTab === 'login' ? (
+                     <form onSubmit={handleLoginSubmit}>
+                        <p className="text-center text-slate-600 mb-6">Acesse sua conta para continuar.</p>
+                        <div className="mb-6">
+                            <label htmlFor="user-select" className="block text-sm font-medium text-slate-700 mb-2">
+                                Selecione um usuário para simular o login:
+                            </label>
+                            <select
+                                id="user-select"
+                                value={selectedUserId}
+                                onChange={(e) => setSelectedUserId(e.target.value)}
+                                className="block w-full px-4 py-3 text-base text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            >
+                                {USERS.map((user) => (
+                                    <option key={user.id} value={user.id}>
+                                        {user.name} ({user.type === 'admin' ? 'Admin' : 'Cliente'})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300"
+                            >
+                                {isLoading ? 'Entrando...' : 'Entrar'}
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    <>
+                        {showSuccessMessage ? (
+                            <div className="text-center p-4 bg-green-100 text-green-800 rounded-lg">
+                                <h3 className="font-bold text-lg">Cadastro enviado com sucesso!</h3>
+                                <p className="mt-2">Seu cadastro será analisado pela nossa equipe. Você receberá um e-mail quando for aprovado.</p>
+                                <button onClick={() => setShowSuccessMessage(false)} className="mt-4 font-semibold underline">Fazer novo cadastro</button>
+                            </div>
+                        ) : (
+                             <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                                <p className="text-center text-slate-600 mb-4">Preencha seus dados para começar a vender.</p>
+                                 <div>
+                                    <label htmlFor="seller-name" className="block text-sm font-medium text-slate-700">Nome Completo</label>
+                                    <input type="text" id="seller-name" value={sellerName} onChange={e => setSellerName(e.target.value)} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
+                                </div>
+                                 <div>
+                                    <label htmlFor="seller-email" className="block text-sm font-medium text-slate-700">E-mail</label>
+                                    <input type="email" id="seller-email" value={sellerEmail} onChange={e => setSellerEmail(e.target.value)} className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
+                                </div>
+                                <div>
+                                    <label htmlFor="seller-phone" className="block text-sm font-medium text-slate-700">Telefone (WhatsApp)</label>
+                                    <input type="tel" id="seller-phone" value={sellerPhone} onChange={e => setSellerPhone(e.target.value)} placeholder="71999999999" className="mt-1 block w-full border border-slate-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500" required />
+                                </div>
+                                <div>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300"
+                                    >
+                                        {isLoading ? 'Enviando...' : 'Finalizar Cadastro'}
+                                    </button>
+                                </div>
+                             </form>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );
