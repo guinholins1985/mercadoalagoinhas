@@ -41,6 +41,31 @@ const CodeSnippet: React.FC<{ language: string; code: string }> = ({ language, c
     </div>
 );
 
+// Vercel/Tailwind JIT Fix: This component ensures that all Tailwind classes are static strings.
+const ApiKeyStatusBadge: React.FC<{ status: ApiKey['status']; themeColor: string }> = ({ status, themeColor }) => {
+    const baseClasses = "px-2 py-0.5 text-xs rounded-full";
+
+    if (status === 'Inativa') {
+        return <span className={`${baseClasses} bg-red-100 text-red-800`}>{status}</span>;
+    }
+
+    // Handle 'Ativa' status with theme-sensitive colors
+    switch (themeColor) {
+        case 'green':
+            return <span className={`${baseClasses} bg-green-100 text-green-800`}>{status}</span>;
+        case 'blue':
+            return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>{status}</span>;
+        case 'orange':
+            return <span className={`${baseClasses} bg-orange-100 text-orange-800`}>{status}</span>;
+        case 'purple':
+            return <span className={`${baseClasses} bg-purple-100 text-purple-800`}>{status}</span>;
+        case 'pink':
+            return <span className={`${baseClasses} bg-pink-100 text-pink-800`}>{status}</span>;
+        default:
+            return <span className={`${baseClasses} bg-green-100 text-green-800`}>{status}</span>;
+    }
+};
+
 export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
     const [apiKeys, setApiKeys] = useState(initialApiKeys);
     const [webhooks, setWebhooks] = useState(initialWebhooks);
@@ -159,9 +184,7 @@ export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
                                     </td>
                                     <td className="px-4 py-2 font-mono text-xs">{key.key}</td>
                                     <td className="px-4 py-2">
-                                        <span className={`px-2 py-0.5 text-xs rounded-full ${key.status === 'Ativa' ? `${theme.bg100} ${theme.text800}` : 'bg-red-100 text-red-800'}`}>
-                                            {key.status}
-                                        </span>
+                                        <ApiKeyStatusBadge status={key.status} themeColor={themeColor} />
                                     </td>
                                     <td className="px-4 py-2 text-right">
                                          <div className="flex items-center justify-end gap-3">

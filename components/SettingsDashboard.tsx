@@ -22,7 +22,7 @@ const initialGatewayConfigs: Record<Gateway, GatewayConfig> = {
     'Mercado Pago': { active: true, configured: true, credentials: { clientId: 'CLIENT_ID_MOCK', clientSecret: 'CLIENT_SECRET_MOCK' }},
     'PagSeguro': { active: false, configured: false, credentials: { email: '', token: '' }},
     'Asaas': { active: true, configured: false, credentials: { apiKey: '' }},
-    'PicPay': { active: false, configured: false, credentials: { picpayToken: '', sellerToken: '' }},
+    'PicPay': { active: false, configured: false, credentials: { picpayToken: 'x-picpay-token', sellerToken: 'x-seller-token' }},
     'Pix': { active: true, configured: true, credentials: { chavePix: 'CHAVE_PIX_MOCK' }},
 };
 
@@ -56,6 +56,26 @@ const ToggleSwitch: React.FC<{ enabled: boolean; onChange: () => void; themeClas
         </button>
     );
 };
+
+// Vercel/Tailwind JIT Fix: This component ensures that all Tailwind classes are static strings.
+const PaymentMethodTag: React.FC<{ themeColor: string, children: React.ReactNode }> = ({ themeColor, children }) => {
+    const baseClasses = "px-3 py-1 text-sm font-medium rounded-full";
+    switch (themeColor) {
+        case 'green':
+            return <span className={`${baseClasses} bg-green-100 text-green-800`}>{children}</span>;
+        case 'blue':
+            return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>{children}</span>;
+        case 'orange':
+            return <span className={`${baseClasses} bg-orange-100 text-orange-800`}>{children}</span>;
+        case 'purple':
+            return <span className={`${baseClasses} bg-purple-100 text-purple-800`}>{children}</span>;
+        case 'pink':
+            return <span className={`${baseClasses} bg-pink-100 text-pink-800`}>{children}</span>;
+        default:
+            return <span className={`${baseClasses} bg-green-100 text-green-800`}>{children}</span>;
+    }
+};
+
 
 export function SettingsDashboard({ themeColor }: { themeColor: string }) {
     const [gatewayConfigs, setGatewayConfigs] = useState(initialGatewayConfigs);
@@ -169,9 +189,9 @@ export function SettingsDashboard({ themeColor }: { themeColor: string }) {
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {paymentMethods.map(method => (
-                                <span key={method} className={`px-3 py-1 ${theme.bg100} ${theme.text800} text-sm font-medium rounded-full`}>
+                                <PaymentMethodTag key={method} themeColor={themeColor}>
                                     {method}
-                                </span>
+                                </PaymentMethodTag>
                             ))}
                         </div>
                     </div>

@@ -292,19 +292,20 @@ export function AdminDashboard({
     const TabButton: React.FC<{tab: Tab; label: string; icon: React.ReactNode}> = ({ tab, label, icon }) => (
         <button
             onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
-                activeTab === tab 
-                ? `${theme.bg600} text-white shadow-sm` 
-                : 'text-slate-600 hover:bg-slate-200'
+            className={`w-full flex-shrink-0 md:flex-shrink-1 flex items-center justify-start gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                activeTab === tab
+                ? `${theme.bg600} text-white shadow-md`
+                : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
             }`}
         >
-            {icon} {label}
+            {icon}
+            <span className="truncate">{label}</span>
         </button>
     );
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
                  <h1 className="text-3xl font-bold text-slate-900">Painel do Administrador</h1>
                  <div className="flex items-center gap-3">
                     <button 
@@ -328,18 +329,24 @@ export function AdminDashboard({
                  </div>
             </div>
             
-            <div className="flex space-x-2 border-b mb-6 overflow-x-auto pb-2 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-                <TabButton tab="overview" label="Visão Geral" icon={<ChartBarIcon className="h-5 w-5"/>} />
-                <TabButton tab="products" label="Produtos" icon={<PackageIcon className="h-5 w-5"/>} />
-                <TabButton tab="sellers" label="Vendedores" icon={<UsersIcon className="h-5 w-5"/>} />
-                <TabButton tab="financial" label="Financeiro" icon={<CreditCardIcon className="h-5 w-5"/>} />
-                <TabButton tab="appearance" label="Aparência" icon={<EyeIcon className="h-5 w-5"/>} />
-                <TabButton tab="data" label="Dados" icon={<DatabaseIcon className="h-5 w-5"/>} />
-                <TabButton tab="settings" label="Configurações" icon={<CogIcon className="h-5 w-5"/>} />
-            </div>
-            
-            <div>
-                {renderTabContent()}
+            <div className="flex flex-col md:flex-row gap-8 mt-6">
+                {/* Sidebar Navigation */}
+                <aside className="md:w-56 lg:w-64 flex-shrink-0">
+                    <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+                        <TabButton tab="overview" label="Visão Geral" icon={<ChartBarIcon className="h-5 w-5"/>} />
+                        <TabButton tab="products" label="Produtos" icon={<PackageIcon className="h-5 w-5"/>} />
+                        <TabButton tab="sellers" label="Vendedores" icon={<UsersIcon className="h-5 w-5"/>} />
+                        <TabButton tab="financial" label="Financeiro" icon={<CreditCardIcon className="h-5 w-5"/>} />
+                        <TabButton tab="appearance" label="Aparência" icon={<EyeIcon className="h-5 w-5"/>} />
+                        <TabButton tab="data" label="Dados" icon={<DatabaseIcon className="h-5 w-5"/>} />
+                        <TabButton tab="settings" label="Configurações" icon={<CogIcon className="h-5 w-5"/>} />
+                    </nav>
+                </aside>
+    
+                {/* Content Area */}
+                <main className="flex-grow min-w-0">
+                    {renderTabContent()}
+                </main>
             </div>
 
             <ProductFormModal

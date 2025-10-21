@@ -11,6 +11,35 @@ const StatCard: React.FC<{title: string; value: string; extra?: string}> = ({ ti
     </div>
 );
 
+// Vercel/Tailwind JIT Fix: This component ensures that all Tailwind classes are static strings.
+// Dynamically constructed class names like `bg-${color}-100` are not detected by the JIT compiler.
+const StatusBadge: React.FC<{ status: Transaction['status']; themeColor: string }> = ({ status, themeColor }) => {
+    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
+
+    if (status === 'Pendente') {
+        return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>{status}</span>;
+    }
+    if (status === 'Rejeitado') {
+        return <span className={`${baseClasses} bg-red-100 text-red-800`}>{status}</span>;
+    }
+    
+    // Handle 'Aprovado' status with theme-sensitive colors
+    switch (themeColor) {
+        case 'green':
+            return <span className={`${baseClasses} bg-green-100 text-green-800`}>{status}</span>;
+        case 'blue':
+            return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>{status}</span>;
+        case 'orange':
+            return <span className={`${baseClasses} bg-orange-100 text-orange-800`}>{status}</span>;
+        case 'purple':
+            return <span className={`${baseClasses} bg-purple-100 text-purple-800`}>{status}</span>;
+        case 'pink':
+            return <span className={`${baseClasses} bg-pink-100 text-pink-800`}>{status}</span>;
+        default:
+            return <span className={`${baseClasses} bg-green-100 text-green-800`}>{status}</span>;
+    }
+};
+
 
 export function FinancialDashboard({ transactions, themeColor }: { transactions: Transaction[], themeColor: string }) {
     const [statusFilter, setStatusFilter] = useState('all');
@@ -89,9 +118,7 @@ export function FinancialDashboard({ transactions, themeColor }: { transactions:
                                     <td className="px-6 py-4 text-red-600">-{formatCurrency(t.fee)}</td>
                                     <td className={`px-6 py-4 font-semibold ${theme.text700}`}>{formatCurrency(t.netAmount)}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${t.status === 'Aprovado' ? `${theme.bg100} ${theme.text800}` : t.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                            {t.status}
-                                        </span>
+                                        <StatusBadge status={t.status} themeColor={themeColor} />
                                     </td>
                                 </tr>
                             ))}
