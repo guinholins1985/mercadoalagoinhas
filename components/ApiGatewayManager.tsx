@@ -4,6 +4,7 @@ import { EditIcon } from './icons/EditIcon';
 import { DeleteIcon } from './icons/DeleteIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { XCircleIcon } from './icons/XCircleIcon';
+import { getThemeClasses } from '../utils/theme';
 
 type ApiKey = {
     id: string;
@@ -43,6 +44,7 @@ const CodeSnippet: React.FC<{ language: string; code: string }> = ({ language, c
 export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
     const [apiKeys, setApiKeys] = useState(initialApiKeys);
     const [webhooks, setWebhooks] = useState(initialWebhooks);
+    const theme = getThemeClasses(themeColor);
 
     // Editing states
     const [editingKeyId, setEditingKeyId] = useState<string | null>(null);
@@ -123,7 +125,7 @@ export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
         setNewWebhookEvents('');
     };
 
-    const inputClasses = `border border-slate-300 rounded-md shadow-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+    const inputClasses = `border border-slate-300 rounded-md shadow-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 ${theme.focusRing500} focus:border-transparent`;
 
     return (
         <div className="space-y-8 pt-6 border-t">
@@ -131,7 +133,7 @@ export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h4 className="text-md font-semibold text-slate-700">Chaves de API</h4>
-                    <button onClick={handleGenerateKey} className={`flex items-center gap-1 px-3 py-1.5 bg-${themeColor}-600 text-white text-sm font-semibold rounded-md hover:bg-${themeColor}-700`}>
+                    <button onClick={handleGenerateKey} className={`flex items-center gap-1 px-3 py-1.5 ${theme.bg600} text-white text-sm font-semibold rounded-md ${theme.hoverBg700}`}>
                         <PlusIcon /> Gerar Chave
                     </button>
                 </div>
@@ -157,7 +159,7 @@ export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
                                     </td>
                                     <td className="px-4 py-2 font-mono text-xs">{key.key}</td>
                                     <td className="px-4 py-2">
-                                        <span className={`px-2 py-0.5 text-xs rounded-full ${key.status === 'Ativa' ? `bg-${themeColor}-100 text-${themeColor}-800` : 'bg-red-100 text-red-800'}`}>
+                                        <span className={`px-2 py-0.5 text-xs rounded-full ${key.status === 'Ativa' ? `${theme.bg100} ${theme.text800}` : 'bg-red-100 text-red-800'}`}>
                                             {key.status}
                                         </span>
                                     </td>
@@ -249,7 +251,7 @@ export function ApiGatewayManager({ themeColor }: { themeColor: string }) {
                                 <input type="text" value={newWebhookEvents} onChange={e => setNewWebhookEvents(e.target.value)} placeholder="Eventos (separados por vírgula), ex: payment.confirmed" className={`${inputClasses} w-full`}/>
                                 <div className="flex justify-end gap-2">
                                      <button onClick={() => setIsAddingWebhook(false)} className="px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">Cancelar</button>
-                                    <button onClick={handleAddWebhook} className={`px-3 py-1.5 text-sm bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>Salvar Webhook</button>
+                                    <button onClick={handleAddWebhook} className={`px-3 py-1.5 text-sm ${theme.bg600} text-white font-semibold rounded-md ${theme.hoverBg700}`}>Salvar Webhook</button>
                                 </div>
                              </div>
                         </div>

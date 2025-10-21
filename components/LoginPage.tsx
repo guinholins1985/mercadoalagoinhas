@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { User } from '../types';
 import { XCircleIcon } from './icons/XCircleIcon';
+import { getThemeClasses } from '../utils/theme';
 
 interface LoginPageProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeCol
     const [loginIdentifier, setLoginIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const theme = getThemeClasses(themeColor);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -66,7 +68,7 @@ export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeCol
                      {logoUrl ? (
                         <img src={logoUrl} alt={`${storeName} logo`} className="h-12 max-w-full mx-auto object-contain mb-2" />
                     ) : (
-                         <h1 className={`text-3xl font-extrabold text-${themeColor}-600`}>
+                         <h1 className={`text-3xl font-extrabold ${theme.text600}`}>
                             🛒 {storeName}
                         </h1>
                     )}
@@ -83,7 +85,7 @@ export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeCol
                             id="login"
                             value={loginIdentifier}
                             onChange={(e) => setLoginIdentifier(e.target.value)}
-                            className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500`}
+                            className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-1 ${theme.focusRing500} ${theme.border500}`}
                             placeholder="Digite seu usuário ou e-mail"
                             required
                         />
@@ -95,7 +97,7 @@ export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeCol
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-${themeColor}-500 focus:border-${themeColor}-500`}
+                            className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-1 ${theme.focusRing500} ${theme.border500}`}
                             placeholder="••••••••"
                             required
                         />
@@ -108,7 +110,7 @@ export function LoginPage({ isOpen, onClose, onLogin, users, storeName, themeCol
                     <div>
                         <button
                             type="submit"
-                            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-${themeColor}-600 hover:bg-${themeColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${themeColor}-500`}
+                            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${theme.bg600} ${theme.hoverBg700} focus:outline-none focus:ring-2 focus:ring-offset-2 ${theme.focusRing500}`}
                         >
                             Entrar
                         </button>

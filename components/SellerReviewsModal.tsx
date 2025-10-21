@@ -3,6 +3,7 @@ import React from 'react';
 import type { Seller } from '../types';
 import { SELLER_REVIEWS } from '../constants'; // Mock data for reviews
 import { StarRating } from './StarRating';
+import { getThemeClasses } from '../utils/theme';
 
 interface SellerReviewsModalProps {
     isOpen: boolean;
@@ -14,6 +15,7 @@ interface SellerReviewsModalProps {
 export const SellerReviewsModal: React.FC<SellerReviewsModalProps> = ({ isOpen, onClose, seller, themeColor }) => {
     if (!isOpen || !seller) return null;
 
+    const theme = getThemeClasses(themeColor);
     const reviews = SELLER_REVIEWS.filter(review => review.sellerId === seller.id);
     const averageRating = reviews.length > 0
         ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
@@ -34,7 +36,7 @@ export const SellerReviewsModal: React.FC<SellerReviewsModalProps> = ({ isOpen, 
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className="text-2xl font-bold text-slate-800">Avaliações de</h2>
-                            <h3 className={`text-xl font-semibold text-${themeColor}-600`}>{seller.nomeNegocio}</h3>
+                            <h3 className={`text-xl font-semibold ${theme.text600}`}>{seller.nomeNegocio}</h3>
                         </div>
                         <button onClick={onClose} className="text-2xl text-slate-500 hover:text-slate-800">&times;</button>
                     </div>

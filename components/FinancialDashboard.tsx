@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { Transaction } from '../types';
 import { DownloadIcon } from './icons/DownloadIcon';
+import { getThemeClasses } from '../utils/theme';
 
 const StatCard: React.FC<{title: string; value: string; extra?: string}> = ({ title, value, extra }) => (
     <div className="bg-white p-4 rounded-lg shadow-md">
@@ -13,6 +14,7 @@ const StatCard: React.FC<{title: string; value: string; extra?: string}> = ({ ti
 
 export function FinancialDashboard({ transactions, themeColor }: { transactions: Transaction[], themeColor: string }) {
     const [statusFilter, setStatusFilter] = useState('all');
+    const theme = getThemeClasses(themeColor);
 
     const filteredTransactions = useMemo(() => {
         if (statusFilter === 'all') {
@@ -52,7 +54,7 @@ export function FinancialDashboard({ transactions, themeColor }: { transactions:
                         <select 
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className={`bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-${themeColor}-500 focus:border-${themeColor}-500 block w-full p-2`}
+                            className={`bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-1 ${theme.focusRing500} ${theme.border500} block w-full p-2`}
                         >
                             <option value="all">Todos os Status</option>
                             <option value="aprovado">Aprovado</option>
@@ -85,9 +87,9 @@ export function FinancialDashboard({ transactions, themeColor }: { transactions:
                                     <td className="px-6 py-4">{t.productName}</td>
                                     <td className="px-6 py-4">{formatCurrency(t.amount)}</td>
                                     <td className="px-6 py-4 text-red-600">-{formatCurrency(t.fee)}</td>
-                                    <td className={`px-6 py-4 font-semibold text-${themeColor}-700`}>{formatCurrency(t.netAmount)}</td>
+                                    <td className={`px-6 py-4 font-semibold ${theme.text700}`}>{formatCurrency(t.netAmount)}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${t.status === 'Aprovado' ? `bg-${themeColor}-100 text-${themeColor}-800` : t.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${t.status === 'Aprovado' ? `${theme.bg100} ${theme.text800}` : t.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                                             {t.status}
                                         </span>
                                     </td>

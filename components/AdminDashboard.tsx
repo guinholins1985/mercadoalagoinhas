@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { Product, Seller, Transaction } from '../types';
+import type { Product, Seller, Transaction, AppearanceSettings } from '../types';
 import { ProductFormModal } from './ProductFormModal';
 import { SellerFormModal } from './SellerFormModal';
 import { ReportsDashboard } from './ReportsDashboard';
 import { FinancialDashboard } from './FinancialDashboard';
 import { SettingsDashboard } from './SettingsDashboard';
 import { AppearanceDashboard } from './AppearanceDashboard';
+import { DataDashboard } from './DataDashboard';
 import { PlusIcon } from './icons/PlusIcon';
 import { EditIcon } from './icons/EditIcon';
 import { DeleteIcon } from './icons/DeleteIcon';
@@ -17,41 +18,34 @@ import { CreditCardIcon } from './icons/CreditCardIcon';
 import { CogIcon } from './icons/CogIcon';
 import { EyeIcon } from './icons/EyeIcon';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
+import { DatabaseIcon } from './icons/DatabaseIcon';
 import { GoogleGenAI } from "@google/genai";
-import { TRANSACTIONS } from '../constants'; // Import mock transactions
+import { TRANSACTIONS } from '../constants';
+import { getThemeClasses } from '../utils/theme';
 
 
-type Tab = 'overview' | 'products' | 'sellers' | 'financial' | 'appearance' | 'settings';
+type Tab = 'overview' | 'products' | 'sellers' | 'financial' | 'appearance' | 'data' | 'settings';
 
 interface AdminDashboardProps {
     initialProducts: Product[];
+    onProductsChange: (products: Product[]) => void;
     initialSellers: Seller[];
-    initialBannerImages: string[];
-    initialStoreName: string;
-    initialThemeColor: string;
-    initialLogoUrl: string | null;
-    onSaveChanges: (settings: {
-        bannerImages: string[];
-        storeName: string;
-        themeColor: string;
-        logoUrl: string | null;
-    }) => void;
+    onSellersChange: (sellers: Seller[]) => void;
+    initialAppearance: AppearanceSettings;
+    onSaveChanges: (settings: AppearanceSettings) => void;
     onLogout: () => void;
 }
 
 export function AdminDashboard({
     initialProducts,
+    onProductsChange,
     initialSellers,
-    initialBannerImages,
-    initialStoreName,
-    initialThemeColor,
-    initialLogoUrl,
+    onSellersChange,
+    initialAppearance,
     onSaveChanges,
     onLogout
 }: AdminDashboardProps) {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
-    const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [sellers, setSellers] = useState<Seller[]>(initialSellers);
     const [transactions] = useState<Transaction[]>(TRANSACTIONS);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
@@ -60,38 +54,23 @@ export function AdminDashboard({
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Local state for appearance settings
-    const [localBannerImages, setLocalBannerImages] = useState(initialBannerImages);
-    const [localStoreName, setLocalStoreName] = useState(initialStoreName);
-    const [localThemeColor, setLocalThemeColor] = useState(initialThemeColor);
-    const [localLogoUrl, setLocalLogoUrl] = useState(initialLogoUrl);
+    // Local state for appearance settings to batch updates
+    const [localAppearance, setLocalAppearance] = useState(initialAppearance);
+    const theme = getThemeClasses(localAppearance.themeColor);
 
      // Reset local state if initial props change (e.g., after saving)
     useEffect(() => {
-        setLocalBannerImages(initialBannerImages);
-        setLocalStoreName(initialStoreName);
-        setLocalThemeColor(initialThemeColor);
-        setLocalLogoUrl(initialLogoUrl);
-    }, [initialBannerImages, initialStoreName, initialThemeColor, initialLogoUrl]);
+        setLocalAppearance(initialAppearance);
+    }, [initialAppearance]);
 
 
     const hasChanges = useMemo(() => {
-        return (
-            JSON.stringify(localBannerImages) !== JSON.stringify(initialBannerImages) ||
-            localStoreName !== initialStoreName ||
-            localThemeColor !== initialThemeColor ||
-            localLogoUrl !== initialLogoUrl
-        );
-    }, [localBannerImages, localStoreName, localThemeColor, localLogoUrl, initialBannerImages, initialStoreName, initialThemeColor, initialLogoUrl]);
+        return JSON.stringify(localAppearance) !== JSON.stringify(initialAppearance);
+    }, [localAppearance, initialAppearance]);
 
     const handleSave = () => {
         setIsSaving(true);
-        onSaveChanges({
-            bannerImages: localBannerImages,
-            storeName: localStoreName,
-            themeColor: localThemeColor,
-            logoUrl: localLogoUrl,
-        });
+        onSaveChanges(localAppearance);
         setTimeout(() => {
             setIsSaving(false);
         }, 1500); // Simulate save time for user feedback
@@ -149,20 +128,20 @@ export function AdminDashboard({
 
     const handleDeleteProduct = (productId: string) => {
         if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-            setProducts(products.filter(p => p.id !== productId));
+            onProductsChange(initialProducts.filter(p => p.id !== productId));
         }
     };
 
     const handleSaveProduct = (productData: Omit<Product, 'id' | 'rating'> & { id?: string }) => {
         if (productData.id) {
-            setProducts(products.map(p => p.id === productData.id ? { ...p, ...productData } : p));
+            onProductsChange(initialProducts.map(p => p.id === productData.id ? { ...p, ...productData } : p));
         } else {
             const newProduct: Product = {
                 ...productData,
                 id: `prod-${Date.now()}`,
                 rating: 0, 
             };
-            setProducts([newProduct, ...products]);
+            onProductsChange([newProduct, ...initialProducts]);
         }
     };
     
@@ -179,14 +158,14 @@ export function AdminDashboard({
 
     const handleDeleteSeller = (sellerId: string) => {
         if (window.confirm('Tem certeza que deseja excluir este vendedor? Isso também removerá seus produtos.')) {
-            setSellers(sellers.filter(s => s.id !== sellerId));
-            setProducts(products.filter(p => p.sellerId !== sellerId));
+            onSellersChange(initialSellers.filter(s => s.id !== sellerId));
+            onProductsChange(initialProducts.filter(p => p.sellerId !== sellerId));
         }
     };
     
     const handleSaveSeller = (sellerData: Omit<Seller, 'id' | 'dataCadastro' | 'rating'> & { id?: string }) => {
         if (sellerData.id) {
-            setSellers(sellers.map(s => s.id === sellerData.id ? { ...s, ...sellerData } : s));
+            onSellersChange(initialSellers.map(s => s.id === sellerData.id ? { ...s, ...sellerData } : s));
         } else {
             const newSeller: Seller = {
                 ...sellerData,
@@ -194,24 +173,25 @@ export function AdminDashboard({
                 dataCadastro: new Date().toISOString().split('T')[0],
                 rating: 0,
             };
-            setSellers([newSeller, ...sellers]);
+            onSellersChange([newSeller, ...initialSellers]);
         }
     };
 
     const handleApproveSeller = (sellerId: string) => {
-        setSellers(sellers.map(s => s.id === sellerId ? { ...s, status: 'Aprovado' } : s));
+        onSellersChange(initialSellers.map(s => s.id === sellerId ? { ...s, status: 'Aprovado' } : s));
     };
     
     const renderTabContent = () => {
+        const { themeColor } = localAppearance;
         switch (activeTab) {
             case 'overview':
-                return <ReportsDashboard products={products} sellers={sellers} themeColor={localThemeColor}/>;
+                return <ReportsDashboard products={initialProducts} sellers={initialSellers} themeColor={themeColor}/>;
             case 'products':
                 return (
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-800">Gerenciar Produtos</h2>
-                            <button onClick={handleAddProduct} className={`flex items-center gap-2 px-4 py-2 bg-${localThemeColor}-600 text-white font-semibold rounded-md hover:bg-${localThemeColor}-700`}>
+                            <button onClick={handleAddProduct} className={`flex items-center gap-2 px-4 py-2 ${theme.bg600} text-white font-semibold rounded-md ${theme.hoverBg700}`}>
                                 <PlusIcon /> Novo Produto
                             </button>
                         </div>
@@ -227,15 +207,15 @@ export function AdminDashboard({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {products.map(p => (
+                                    {initialProducts.map(p => (
                                         <tr key={p.id} className="bg-white border-b hover:bg-slate-50">
                                             <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{p.name}</th>
                                             <td className="px-6 py-4">{p.sellerName}</td>
                                             <td className="px-6 py-4">R$ {p.price.toFixed(2)}</td>
                                             <td className="px-6 py-4">{p.stock}</td>
                                             <td className="px-6 py-4 flex gap-3">
-                                                <button onClick={() => handleEditProduct(p)} title="Editar" className="text-blue-600 hover:text-blue-800"><EditIcon /></button>
-                                                <button onClick={() => handleDeleteProduct(p.id)} title="Excluir" className="text-red-600 hover:text-red-800"><DeleteIcon /></button>
+                                                <button onClick={() => handleEditProduct(p)} title="Editar" className="p-1 rounded-full text-blue-600 hover:text-white hover:bg-blue-500 transition-colors"><EditIcon /></button>
+                                                <button onClick={() => handleDeleteProduct(p.id)} title="Excluir" className="p-1 rounded-full text-red-600 hover:text-white hover:bg-red-500 transition-colors"><DeleteIcon /></button>
                                             </td>
                                         </tr>
                                     ))}
@@ -249,7 +229,7 @@ export function AdminDashboard({
                     <div>
                          <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-800">Gerenciar Vendedores</h2>
-                            <button onClick={handleAddSeller} className={`flex items-center gap-2 px-4 py-2 bg-${localThemeColor}-600 text-white font-semibold rounded-md hover:bg-${localThemeColor}-700`}>
+                            <button onClick={handleAddSeller} className={`flex items-center gap-2 px-4 py-2 ${theme.bg600} text-white font-semibold rounded-md ${theme.hoverBg700}`}>
                                 <PlusIcon /> Novo Vendedor
                             </button>
                         </div>
@@ -265,7 +245,7 @@ export function AdminDashboard({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {sellers.map(s => (
+                                    {initialSellers.map(s => (
                                         <tr key={s.id} className="bg-white border-b hover:bg-slate-50">
                                             <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{s.nomeNegocio}</th>
                                             <td className="px-6 py-4">{s.cnpj}</td>
@@ -276,9 +256,9 @@ export function AdminDashboard({
                                             </td>
                                             <td className="px-6 py-4">{new Date(s.dataCadastro).toLocaleDateString('pt-BR')}</td>
                                             <td className="px-6 py-4 flex gap-3">
-                                                {s.status === 'Pendente' && <button onClick={() => handleApproveSeller(s.id)} title="Aprovar" className="text-green-600 hover:text-green-800"><CheckIcon /></button>}
-                                                <button onClick={() => handleEditSeller(s)} title="Editar" className="text-blue-600 hover:text-blue-800"><EditIcon /></button>
-                                                <button onClick={() => handleDeleteSeller(s.id)} title="Excluir" className="text-red-600 hover:text-red-800"><DeleteIcon /></button>
+                                                {s.status === 'Pendente' && <button onClick={() => handleApproveSeller(s.id)} title="Aprovar" className="p-1 rounded-full text-green-600 hover:text-white hover:bg-green-500 transition-colors"><CheckIcon /></button>}
+                                                <button onClick={() => handleEditSeller(s)} title="Editar" className="p-1 rounded-full text-blue-600 hover:text-white hover:bg-blue-500 transition-colors"><EditIcon /></button>
+                                                <button onClick={() => handleDeleteSeller(s.id)} title="Excluir" className="p-1 rounded-full text-red-600 hover:text-white hover:bg-red-500 transition-colors"><DeleteIcon /></button>
                                             </td>
                                         </tr>
                                     ))}
@@ -288,20 +268,24 @@ export function AdminDashboard({
                     </div>
                 );
             case 'financial':
-                return <FinancialDashboard transactions={transactions} themeColor={localThemeColor} />;
+                return <FinancialDashboard transactions={transactions} themeColor={themeColor} />;
             case 'appearance':
                 return <AppearanceDashboard
-                    bannerImages={localBannerImages}
-                    onBannerImagesChange={setLocalBannerImages}
-                    storeName={localStoreName}
-                    onStoreNameChange={setLocalStoreName}
-                    themeColor={localThemeColor}
-                    onThemeColorChange={setLocalThemeColor}
-                    logoUrl={localLogoUrl}
-                    onLogoUrlChange={setLocalLogoUrl}
+                    settings={localAppearance}
+                    onSettingsChange={setLocalAppearance}
+                />;
+            case 'data':
+                return <DataDashboard
+                    products={initialProducts}
+                    sellers={initialSellers}
+                    appearance={initialAppearance}
+                    onProductsChange={onProductsChange}
+                    onSellersChange={onSellersChange}
+                    onAppearanceChange={onSaveChanges}
+                    themeColor={themeColor}
                 />;
             case 'settings':
-                return <SettingsDashboard themeColor={localThemeColor} />;
+                return <SettingsDashboard themeColor={themeColor} />;
         }
     };
     
@@ -310,7 +294,7 @@ export function AdminDashboard({
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
                 activeTab === tab 
-                ? `bg-${localThemeColor}-600 text-white shadow-sm` 
+                ? `${theme.bg600} text-white shadow-sm` 
                 : 'text-slate-600 hover:bg-slate-200'
             }`}
         >
@@ -336,7 +320,7 @@ export function AdminDashboard({
                         className={`px-4 py-2 font-semibold rounded-md transition-colors text-sm text-white ${
                             !hasChanges || isSaving
                             ? 'bg-slate-400 cursor-not-allowed'
-                            : `bg-${localThemeColor}-600 hover:bg-${localThemeColor}-700`
+                            : `${theme.bg600} ${theme.hoverBg700}`
                         }`}
                     >
                        {isSaving ? 'Salvando...' : !hasChanges ? 'Salvo!' : 'Salvar Alterações'}
@@ -350,6 +334,7 @@ export function AdminDashboard({
                 <TabButton tab="sellers" label="Vendedores" icon={<UsersIcon className="h-5 w-5"/>} />
                 <TabButton tab="financial" label="Financeiro" icon={<CreditCardIcon className="h-5 w-5"/>} />
                 <TabButton tab="appearance" label="Aparência" icon={<EyeIcon className="h-5 w-5"/>} />
+                <TabButton tab="data" label="Dados" icon={<DatabaseIcon className="h-5 w-5"/>} />
                 <TabButton tab="settings" label="Configurações" icon={<CogIcon className="h-5 w-5"/>} />
             </div>
             
@@ -362,10 +347,10 @@ export function AdminDashboard({
                 onClose={() => setIsProductModalOpen(false)}
                 onSave={handleSaveProduct}
                 productToEdit={productToEdit}
-                sellers={sellers}
+                sellers={initialSellers}
                 onGenerateDescription={handleGenerateDescription}
                 isGenerating={isGenerating}
-                themeColor={localThemeColor}
+                themeColor={localAppearance.themeColor}
             />
 
              <SellerFormModal
@@ -373,7 +358,7 @@ export function AdminDashboard({
                 onClose={() => setIsSellerModalOpen(false)}
                 onSave={handleSaveSeller}
                 sellerToEdit={sellerToEdit}
-                themeColor={localThemeColor}
+                themeColor={localAppearance.themeColor}
             />
         </div>
     );

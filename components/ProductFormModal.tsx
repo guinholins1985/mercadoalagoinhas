@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Product, Seller } from '../types';
 import { XCircleIcon } from './icons/XCircleIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
+import { getThemeClasses } from '../utils/theme';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -22,6 +23,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
     const [imageUrl, setImageUrl] = useState('');
     const [sellerId, setSellerId] = useState('');
     const [stock, setStock] = useState(0);
+    const theme = getThemeClasses(themeColor);
 
     useEffect(() => {
         if (productToEdit) {
@@ -77,7 +79,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
 
     if (!isOpen) return null;
 
-    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 ${theme.focusRing500} focus:border-transparent`;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
@@ -103,7 +105,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                                         type="button" 
                                         onClick={handleGenerateClick}
                                         disabled={isGenerating || !name}
-                                        className={`flex items-center gap-1 text-xs text-${themeColor}-600 font-semibold hover:text-${themeColor}-800 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        className={`flex items-center gap-1 text-xs ${theme.text600} font-semibold ${theme.hoverText800} disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >
                                         <SparklesIcon />
                                         {isGenerating ? 'Gerando...' : 'Gerar com IA'}
@@ -145,7 +147,7 @@ export function ProductFormModal({ isOpen, onClose, onSave, productToEdit, selle
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">
                             Cancelar
                         </button>
-                        <button type="submit" className={`px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
+                        <button type="submit" className={`px-4 py-2 ${theme.bg600} text-white font-semibold rounded-md ${theme.hoverBg700}`}>
                             Salvar Produto
                         </button>
                     </div>

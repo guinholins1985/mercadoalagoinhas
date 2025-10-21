@@ -54,3 +54,12 @@ export type Transaction = {
     status: 'Aprovado' | 'Pendente' | 'Rejeitado';
     paymentMethod: 'Cartão de Crédito' | 'Pix' | 'Boleto';
 };
+
+export interface AppearanceSettings {
+    bannerImages: string[];
+    storeName: string;
+    themeColor: string;
+    logoUrl: string | null;
+    logoSize: number;
+    centerLogo: boolean;
+}

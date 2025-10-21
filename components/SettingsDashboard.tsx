@@ -5,6 +5,7 @@ import { ApiIcon } from './icons/ApiIcon';
 import { ApiGatewayManager } from './ApiGatewayManager';
 import { EditIcon } from './icons/EditIcon';
 import { CheckIcon } from './icons/CheckIcon';
+import { getThemeClasses } from '../utils/theme';
 
 type Gateway = 'Mercado Pago' | 'PagSeguro' | 'Asaas' | 'PicPay' | 'Pix';
 
@@ -38,13 +39,13 @@ const getCredentialFields = (gateway: Gateway): Record<string, string> => {
 
 
 // A simple toggle switch component for UI
-const ToggleSwitch: React.FC<{ enabled: boolean; onChange: () => void; themeColor: string; }> = ({ enabled, onChange, themeColor }) => {
+const ToggleSwitch: React.FC<{ enabled: boolean; onChange: () => void; themeClasses: ReturnType<typeof getThemeClasses> }> = ({ enabled, onChange, themeClasses }) => {
     return (
         <button
             type="button"
             onClick={onChange}
             className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
-                enabled ? `bg-${themeColor}-600` : 'bg-slate-300'
+                enabled ? themeClasses.bg600 : 'bg-slate-300'
             }`}
         >
             <span
@@ -60,6 +61,7 @@ export function SettingsDashboard({ themeColor }: { themeColor: string }) {
     const [gatewayConfigs, setGatewayConfigs] = useState(initialGatewayConfigs);
     const [editingGateway, setEditingGateway] = useState<Gateway | null>(null);
     const [currentCredentials, setCurrentCredentials] = useState<Record<string, string>>({});
+    const theme = getThemeClasses(themeColor);
 
     const handleToggleGateway = (gateway: Gateway) => {
         setGatewayConfigs(prev => ({
@@ -100,7 +102,7 @@ export function SettingsDashboard({ themeColor }: { themeColor: string }) {
         setCurrentCredentials(prev => ({...prev, [field]: value}));
     };
 
-    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 ${theme.focusRing500} focus:border-transparent`;
 
     return (
         <div>
@@ -124,10 +126,10 @@ export function SettingsDashboard({ themeColor }: { themeColor: string }) {
                                         <span className="font-medium text-slate-700">{gateway}</span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                         <span className={`text-xs font-semibold ${gatewayConfigs[gateway].active ? `text-${themeColor}-600` : 'text-slate-500'}`}>
+                                         <span className={`text-xs font-semibold ${gatewayConfigs[gateway].active ? theme.text600 : 'text-slate-500'}`}>
                                             {gatewayConfigs[gateway].active ? 'Ativo' : 'Inativo'}
                                         </span>
-                                        <ToggleSwitch enabled={gatewayConfigs[gateway].active} onChange={() => handleToggleGateway(gateway)} themeColor={themeColor} />
+                                        <ToggleSwitch enabled={gatewayConfigs[gateway].active} onChange={() => handleToggleGateway(gateway)} themeClasses={theme} />
                                         <button onClick={() => editingGateway === gateway ? handleCancelEditing() : handleStartEditing(gateway)} className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-100">
                                             <EditIcon />
                                         </button>
@@ -152,7 +154,7 @@ export function SettingsDashboard({ themeColor }: { themeColor: string }) {
                                          ))}
                                         <div className="flex justify-end gap-2">
                                             <button onClick={handleCancelEditing} className="px-3 py-1.5 text-sm bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">Cancelar</button>
-                                            <button onClick={handleSaveConfig} className={`px-3 py-1.5 text-sm bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>Salvar</button>
+                                            <button onClick={handleSaveConfig} className={`px-3 py-1.5 text-sm ${theme.bg600} text-white font-semibold rounded-md ${theme.hoverBg700}`}>Salvar</button>
                                         </div>
                                     </div>
                                 )}
@@ -167,7 +169,7 @@ export function SettingsDashboard({ themeColor }: { themeColor: string }) {
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {paymentMethods.map(method => (
-                                <span key={method} className={`px-3 py-1 bg-${themeColor}-100 text-${themeColor}-800 text-sm font-medium rounded-full`}>
+                                <span key={method} className={`px-3 py-1 ${theme.bg100} ${theme.text800} text-sm font-medium rounded-full`}>
                                     {method}
                                 </span>
                             ))}

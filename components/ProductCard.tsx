@@ -4,6 +4,7 @@ import { StarRating } from './StarRating';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { SellerReviewsModal } from './SellerReviewsModal';
 import { SELLERS } from '../constants';
+import { getThemeClasses } from '../utils/theme';
 
 // FIX: Changed component to be of type React.FC to correctly handle React's 'key' prop,
 // resolving a TypeScript error in ProductList.tsx.
@@ -15,6 +16,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, themeColor }) => {
     const [isReviewsModalOpen, setIsReviewsModalOpen] = React.useState(false);
     const seller = SELLERS.find(s => s.id === product.sellerId);
+    const theme = getThemeClasses(themeColor);
 
     const handleSellerClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -49,7 +51,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, themeColor })
                     <h3 className="text-xl font-bold text-slate-800 truncate">{product.name}</h3>
                     <button
                         onClick={handleSellerClick}
-                        className={`text-sm text-${themeColor}-600 hover:underline mt-1 text-left`}
+                        className={`text-sm ${theme.text600} hover:underline mt-1 text-left`}
                         aria-label={`Ver avaliações de ${product.sellerName}`}
                     >
                         Vendido por: <span className="font-semibold">{product.sellerName}</span>
@@ -63,12 +65,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, themeColor })
                     <p className="text-sm text-slate-600 mt-2 flex-grow">{product.description}</p>
                     
                     <div className="mt-4 flex justify-between items-center">
-                        <p className={`text-2xl font-extrabold text-${themeColor}-700`}>{formattedPrice}</p>
+                        <p className={`text-2xl font-extrabold ${theme.text700}`}>{formattedPrice}</p>
                         <a
                             href={whatsappLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`flex items-center gap-2 px-4 py-2 bg-${themeColor}-500 text-white font-semibold rounded-full hover:bg-${themeColor}-600 transition-colors text-sm shadow`}
+                            className={`flex items-center gap-2 px-4 py-2 ${theme.bg500} text-white font-semibold rounded-full ${theme.hoverBg600} transition-colors text-sm shadow`}
                             aria-label={`Contatar ${product.sellerName} via WhatsApp`}
                         >
                             <WhatsAppIcon />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { ProductList } from './components/ProductList';
@@ -6,22 +6,50 @@ import { LoginPage } from './components/LoginPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Banner } from './components/Banner';
 import { PRODUCTS, USERS, SELLERS, BANNER_IMAGES } from './constants';
-import type { User, Product, Seller } from './types';
+import type { User, Product, Seller, AppearanceSettings } from './types';
+import { storage } from './utils/storage';
+
+// Keys for localStorage
+const STORAGE_KEYS = {
+  PRODUCTS: 'mercado_products',
+  SELLERS: 'mercado_sellers',
+  APPEARANCE: 'mercado_appearance',
+};
+
+// Default appearance settings
+const defaultAppearance: AppearanceSettings = {
+  bannerImages: BANNER_IMAGES,
+  storeName: 'Mercado Alagoinhas',
+  themeColor: 'green',
+  logoUrl: null as string | null,
+  logoSize: 40, // Default logo height in px
+  centerLogo: false, // Default logo alignment
+};
+
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
-  // In a real app, this data would come from an API
-  const [products] = useState<Product[]>(PRODUCTS);
-  const [sellers] = useState<Seller[]>(SELLERS);
+  // App data state now hydrated from localStorage
+  const [products, setProducts] = useState<Product[]>(() => storage.getItem(STORAGE_KEYS.PRODUCTS, PRODUCTS));
+  const [sellers, setSellers] = useState<Seller[]>(() => storage.getItem(STORAGE_KEYS.SELLERS, SELLERS));
+  const [appearance, setAppearance] = useState<AppearanceSettings>(() => storage.getItem(STORAGE_KEYS.APPEARANCE, defaultAppearance));
 
-  // New state for appearance
-  const [bannerImages, setBannerImages] = useState<string[]>(BANNER_IMAGES);
-  const [storeName, setStoreName] = useState('Mercado Alagoinhas');
-  const [themeColor, setThemeColor] = useState('green');
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  // Update localStorage whenever data changes
+  useEffect(() => {
+    storage.setItem(STORAGE_KEYS.PRODUCTS, products);
+  }, [products]);
+
+  useEffect(() => {
+    storage.setItem(STORAGE_KEYS.SELLERS, sellers);
+  }, [sellers]);
+
+  useEffect(() => {
+    storage.setItem(STORAGE_KEYS.APPEARANCE, appearance);
+  }, [appearance]);
+
   
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -35,17 +63,9 @@ function App() {
   const handleSearch = (query: string) => {
     setSearchTerm(query.toLowerCase());
   };
-
-  const handleSaveChanges = (settings: {
-    bannerImages: string[];
-    storeName: string;
-    themeColor: string;
-    logoUrl: string | null;
-  }) => {
-    setBannerImages(settings.bannerImages);
-    setStoreName(settings.storeName);
-    setThemeColor(settings.themeColor);
-    setLogoUrl(settings.logoUrl);
+  
+  const handleSaveChanges = (newSettings: AppearanceSettings) => {
+    setAppearance(newSettings);
   };
 
   const filteredProducts = useMemo(() => {
@@ -66,28 +86,29 @@ function App() {
         user={currentUser} 
         onLogout={handleLogout} 
         onLoginClick={() => setIsLoginModalOpen(true)}
-        storeName={storeName}
-        themeColor={themeColor}
-        logoUrl={logoUrl}
+        storeName={appearance.storeName}
+        themeColor={appearance.themeColor}
+        logoUrl={appearance.logoUrl}
+        logoSize={appearance.logoSize}
+        centerLogo={appearance.centerLogo}
       />
       <main className="container mx-auto px-4 pb-12">
         {currentUser?.type === 'admin' ? (
           <AdminDashboard 
-            initialProducts={products} 
+            initialProducts={products}
+            onProductsChange={setProducts}
             initialSellers={sellers}
-            initialBannerImages={bannerImages}
-            initialStoreName={storeName}
-            initialThemeColor={themeColor}
-            initialLogoUrl={logoUrl}
+            onSellersChange={setSellers}
+            initialAppearance={appearance}
             onSaveChanges={handleSaveChanges}
             onLogout={handleLogout}
           />
         ) : (
           <>
-            <SearchBar onSearch={handleSearch} themeColor={themeColor} />
-            <Banner images={bannerImages} />
+            <SearchBar onSearch={handleSearch} themeColor={appearance.themeColor} />
+            <Banner images={appearance.bannerImages} />
             <div className="mt-8 md:mt-12">
-                <ProductList products={filteredProducts} searchTerm={searchTerm} themeColor={themeColor} />
+                <ProductList products={filteredProducts} searchTerm={searchTerm} themeColor={appearance.themeColor} />
             </div>
           </>
         )}
@@ -97,9 +118,9 @@ function App() {
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLogin}
         users={USERS}
-        storeName={storeName}
-        themeColor={themeColor}
-        logoUrl={logoUrl}
+        storeName={appearance.storeName}
+        themeColor={appearance.themeColor}
+        logoUrl={appearance.logoUrl}
       />
     </div>
   );

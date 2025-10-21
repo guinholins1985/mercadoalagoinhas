@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Seller } from '../types';
 import { XCircleIcon } from './icons/XCircleIcon';
+import { getThemeClasses } from '../utils/theme';
 
 interface SellerFormModalProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit, themeCo
     const [cnpj, setCnpj] = useState('');
     const [status, setStatus] = useState<'Aprovado' | 'Pendente' | 'Rejeitado'>('Pendente');
     const [subscriptionStatus, setSubscriptionStatus] = useState<'Ativa' | 'Inativa'>('Inativa');
+    const theme = getThemeClasses(themeColor);
 
     useEffect(() => {
         if (sellerToEdit) {
@@ -57,7 +59,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit, themeCo
 
     if (!isOpen) return null;
 
-    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-transparent`;
+    const inputClasses = `mt-1 block w-full border border-slate-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 ${theme.focusRing500} focus:border-transparent`;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
@@ -114,7 +116,7 @@ export function SellerFormModal({ isOpen, onClose, onSave, sellerToEdit, themeCo
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-md hover:bg-slate-300">
                             Cancelar
                         </button>
-                        <button type="submit" className={`px-4 py-2 bg-${themeColor}-600 text-white font-semibold rounded-md hover:bg-${themeColor}-700`}>
+                        <button type="submit" className={`px-4 py-2 ${theme.bg600} text-white font-semibold rounded-md ${theme.hoverBg700}`}>
                             Salvar Vendedor
                         </button>
                     </div>
