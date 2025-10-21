@@ -1,4 +1,8 @@
-import { type } from "os";
+export interface User {
+    id: string;
+    name: string;
+    type: 'admin' | 'customer';
+}
 
 export interface Product {
     id: string;
@@ -14,18 +18,9 @@ export interface Product {
     tags: string[];
 }
 
-export type UserType = 'admin' | 'customer';
-
-export interface User {
-    id: string;
-    name: string;
-    type: UserType;
-}
-
-// Seller Management & Subscriptions
-export type SellerStatus = 'Pendente' | 'Ativo' | 'Inativo';
 export type Plan = 'Básico' | 'Premium';
 export type SubscriptionStatus = 'Ativa' | 'Atrasada' | 'Cancelada';
+export type SellerStatus = 'Pendente' | 'Aprovado' | 'Recusado';
 
 export interface Seller {
     id: string;
@@ -38,5 +33,14 @@ export interface Seller {
     status: SellerStatus;
     plan: Plan;
     subscriptionStatus: SubscriptionStatus;
-    vencimentoAssinatura: string; // ISO String format: YYYY-MM-DD
+    vencimentoAssinatura: string; // YYYY-MM-DD
+}
+
+export interface SellerReview {
+    id: string;
+    sellerId: string;
+    author: string;
+    rating: number; // 1 to 5
+    comment: string;
+    date: string; // YYYY-MM-DD
 }
